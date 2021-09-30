@@ -30,7 +30,7 @@ line(screen, BLACK, [345, 350], [400, 480], 3)
 line(screen, BLACK, [460, 350], [400, 480], 3)
 line(screen, BLACK, [205, 350], [130, 480], 3)
 lines(screen, BLACK, False, [[540, 350], [630, 380], [720, 300]], 3)
-line(screen, BLACK, [680, 380], [730, 250], 3)
+line(screen, BLACK, [680, 380], [730, 250], 3)#палочка
 polygon(screen, Red, [[730, 250], [720, 200], [770, 215]])
 polygon(screen, Maroon, [[130, 480], [100, 400], [65, 435]])
 circle(screen, Red, [735, 204], 15)
