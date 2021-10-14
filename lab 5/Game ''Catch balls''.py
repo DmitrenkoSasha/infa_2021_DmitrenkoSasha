@@ -4,7 +4,7 @@ from random import randint
 pygame.init()
 
 FPS = 2
-screen = pygame.display.set_mode((1200, 600))
+screen = pygame.display.set_mode((800, 600))
 
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
@@ -21,8 +21,8 @@ def new_ball():
     рисует новый шарик
     """
     global x, y, r
-    x = randint(100, 1100)
-    y = randint(100, 900)
+    x = randint(100, 700)
+    y = randint(100, 500)
     r = randint(10, 100)
     color = COLORS[randint(0, 5)]
     circle(screen, color, (x, y), r)
@@ -34,22 +34,21 @@ def click():
     """
     print('Click!')
     print(x, y, r)
-    print(type(event.pos))
-    print(event.pos[0])
 
 
-
-def check(x_click, y_click):
+def check():
     """
     Проверяет, попал ли пользователь курсором в шарик
-    :param x_click: координата нажатия курсора по горизонтали
-    :param y_click: координата нажатия курсора по горизонтали
-    :return:
+    :return: "Попал!" или "Мимо!"
     """
-    x_click = event.pos([0])  # Из кортежа с двумя элементами event.pos() вытаскиваем первый, соотв. горизонтали
-    y_click = event.pos([1])  # Из кортежа с двумя элементами event.pos() вытаскиваем второй, соотв. вертикали
+    k=0
+    x_click = pygame.mouse.get_pos()[0]  #координата нажатия курсора по горизонтали
+    y_click = pygame.mouse.get_pos()[1]  #координата нажатия курсора по вертикали
     if (x_click-x)**2 + (y_click-y)**2 < r**2:
         k+=1
+        print("Попал!")
+    else:
+        print("Мимо!")
 
 
 pygame.display.update()
@@ -63,7 +62,8 @@ while not finished:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             click()
-
+            check()
+      
     new_ball()
     pygame.display.update()
     screen.fill(BLACK)
