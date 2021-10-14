@@ -1,6 +1,6 @@
 import pygame
 from pygame.draw import *
-from random import randint
+from random import randint, uniform
 pygame.init()
 
 FPS = 2
@@ -15,12 +15,14 @@ CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
+k=0
+
 
 def new_ball():
     """
     рисует новый шарик
     """
-    global x, y, r
+    global x, y, color, r
     x = randint(100, 700)
     y = randint(100, 500)
     r = randint(10, 100)
@@ -28,20 +30,12 @@ def new_ball():
     circle(screen, color, (x, y), r)
 
 
-def click():
-    """
-    :return: Пишет "Click!", а на следующей строке координаты шарика
-    """
-    print('Click!')
-    print(x, y, r)
-
-
 def check():
     """
     Проверяет, попал ли пользователь курсором в шарик
     :return: "Попал!" или "Мимо!"
     """
-    k=0
+    global k
     x_click = pygame.mouse.get_pos()[0]  #координата нажатия курсора по горизонтали
     y_click = pygame.mouse.get_pos()[1]  #координата нажатия курсора по вертикали
     if (x_click-x)**2 + (y_click-y)**2 < r**2:
@@ -50,7 +44,12 @@ def check():
     else:
         print("Мимо!")
 
+pool_x = []
+pool_y = []
+pool_r = []
+pool_color = []
 
+    
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
@@ -61,10 +60,15 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            click()
             check()
-      
+
+            
     new_ball()
+    pool_x.append(x) #список х-координат центров шариков
+    pool_y.append(y) 
+    pool_r.append(r) 
+    pool_color.append(color)
+    print(pool_x)
     pygame.display.update()
     screen.fill(BLACK)
 
