@@ -15,8 +15,8 @@ CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
-k=0
-
+k=0 #  кол-во попаданий
+c=0 #   кол-во шариков в списке
 
 def new_ball():
     """
@@ -61,14 +61,15 @@ while not finished:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             check()
-
-            
+        
     new_ball()
-    pool_x.append(x) #список х-координат центров шариков
-    pool_y.append(y) 
-    pool_r.append(r) 
-    pool_color.append(color)
-    print(pool_x)
+    c+=1
+    if c < 5:
+        pool_x.append(x) #список х-координат центров шариков
+        pool_y.append(y) 
+        pool_r.append(r) 
+        pool_color.append(color)
+        print(pool_x)
     pygame.display.update()
     screen.fill(BLACK)
 
