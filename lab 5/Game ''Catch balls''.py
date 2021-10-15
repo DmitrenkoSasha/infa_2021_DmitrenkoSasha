@@ -33,14 +33,13 @@ pool_vy = []
 
 def new_ball():
     """
-    рисует новый шарик
+    Добавляет новый шарик в список
     """
     global x, y, color, r
     x = randint(100, 700)
     y = randint(100, 500)
     r = randint(10, 100)
     color = COLORS[randint(0, 5)]
-    circle(screen, color, (x, y), r)
 
 
 def check():
@@ -49,10 +48,14 @@ def check():
     :return: "Попал!" или "Мимо!"
     """
     global k
+    flag = 0
     x_click = pygame.mouse.get_pos()[0]  # координата нажатия курсора по горизонтали
     y_click = pygame.mouse.get_pos()[1]  # координата нажатия курсора по вертикали
-    if (x_click - x) ** 2 + (y_click - y) ** 2 < r ** 2:
-        k += 1
+    for i in range(len(pool_x)):
+        if (x_click - pool_x[i]) ** 2 + (y_click - pool_y[i]) ** 2 < pool_r[i] ** 2:
+            k += 1
+            flag = 1
+    if flag == 1:
         print("Попал!")
     else:
         print("Мимо!")
@@ -91,9 +94,9 @@ finished = False
 while not finished:
     clock.tick(FPS)
 
-    new_ball()
     c += 1
     if c < 5:
+        new_ball()
         pool_x.append(x)  # список х-координат центров шариков
         pool_y.append(y)
         pool_r.append(r)
