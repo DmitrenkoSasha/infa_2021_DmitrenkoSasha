@@ -18,6 +18,11 @@ COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 k=0 #  кол-во попаданий
 c=0 #   кол-во шариков в списке
 
+pool_x = []
+pool_y = []
+pool_r = []
+pool_color = []
+
 def new_ball():
     """
     рисует новый шарик
@@ -44,12 +49,29 @@ def check():
     else:
         print("Мимо!")
 
-pool_x = []
-pool_y = []
-pool_r = []
-pool_color = []
-
+def move_x():
+    """Сдвигает все шарики из списка по горизонтали """
     
+    for i in range(len(pool_x)):
+        vx = 1  #uniform(-1, 1) * 3   Будет каждый тик новую скорость каждому шару давать?
+        pool_x[i] = pool_x[i] + vx
+    print(pool_x)    
+    
+
+def move_y():
+    """Сдвигает все шарики из списка по горизонтали """
+    
+    for i in range(len(pool_y)):
+        vy = uniform(-1, 1) * 3   #Будет каждый тик новую скорость каждому шару давать?
+        pool_y[i] = pool_y[i] + vy
+    print(pool_y)
+
+def draw():
+    "Рисует шарики из списка"
+    for i in range(len(pool_x)):
+        circle(screen, pool_color[i], (pool_x[i], pool_y[i]), pool_r[i])
+
+
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
@@ -69,7 +91,11 @@ while not finished:
         pool_y.append(y) 
         pool_r.append(r) 
         pool_color.append(color)
-        print(pool_x)
+        
+    move_x()
+    move_y()
+    draw()
+    
     pygame.display.update()
     screen.fill(BLACK)
 
