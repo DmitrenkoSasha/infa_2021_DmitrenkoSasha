@@ -53,18 +53,16 @@ def move_x():
     """Сдвигает все шарики из списка по горизонтали """
     
     for i in range(len(pool_x)):
-        vx = 1  #uniform(-1, 1) * 3   Будет каждый тик новую скорость каждому шару давать?
-        pool_x[i] = pool_x[i] + vx
-    print(pool_x)    
+        vx = 5  #uniform(-1, 1) * 3   Будет каждый тик новую скорость каждому шару давать?
+        pool_x[i] = pool_x[i] + vx   
     
 
 def move_y():
-    """Сдвигает все шарики из списка по горизонтали """
+    """Сдвигает все шарики из списка по вертикали """
     
     for i in range(len(pool_y)):
-        vy = uniform(-1, 1) * 3   #Будет каждый тик новую скорость каждому шару давать?
+        vy = uniform(-1, 1) * 10   #Будет каждый тик новую скорость каждому шару давать?
         pool_y[i] = pool_y[i] + vy
-    print(pool_y)
 
 def draw():
     "Рисует шарики из списка"
@@ -80,6 +78,7 @@ while not finished:
     clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            print("Кол-во попаданий в случайно возникающие шарики: ", k)
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             check()
