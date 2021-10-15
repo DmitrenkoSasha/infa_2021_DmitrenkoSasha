@@ -1,10 +1,11 @@
 import pygame
 from pygame.draw import *
 from random import randint, uniform
+import math
 
 pygame.init()
 
-FPS = 20
+FPS = 40
 screen = pygame.display.set_mode((800, 600))
 
 RED = (255, 0, 0)
@@ -66,7 +67,10 @@ def move_x():
 
     for i in range(len(pool_x)):
         if (pool_x[i] - pool_r[i] <= 0) or (pool_x[i] + pool_r[i] >= 800):
-            pool_vx[i] = -pool_vx[i]
+            rx = uniform(0, 1)
+            ry = math.sqrt((pool_vx[i]/pool_vy[i])**2 * (1-rx**2)+1)
+            pool_vx[i] = -rx*pool_vx[i]
+            pool_vy[i] = ry * pool_vy[i]
         vx = pool_vx[i]
         pool_x[i] = pool_x[i] + vx
 
@@ -76,7 +80,10 @@ def move_y():
 
     for i in range(len(pool_y)):
         if (pool_y[i] - pool_r[i] <= 0) or (pool_y[i] + pool_r[i] >= 600):
-            pool_vy[i] = -pool_vy[i]
+            ry = uniform(0, 1)
+            rx = math.sqrt((pool_vy[i] / pool_vx[i]) ** 2 * (1 - ry ** 2) + 1)
+            pool_vy[i] = -ry * pool_vy[i]
+            pool_vx[i] = rx * pool_vx[i]
         vy = pool_vy[i]
         pool_y[i] = pool_y[i] + vy
 
@@ -101,8 +108,8 @@ while not finished:
         pool_y.append(y)
         pool_r.append(r)
         pool_color.append(color)
-        pool_vx.append(uniform(-1, 1) * 50)
-        pool_vy.append(uniform(-1, 1) * 50)
+        pool_vx.append(uniform(-1, 1) * 30)
+        pool_vy.append(uniform(-1, 1) * 30)
 
     move_x()
     move_y()
@@ -110,7 +117,7 @@ while not finished:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            print("Кол-во попаданий в случайно возникающие шарики: ", k)
+            print("Кол-во попаданий в шарики: ", k)
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             check()
