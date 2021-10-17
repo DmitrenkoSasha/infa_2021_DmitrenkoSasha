@@ -12,10 +12,13 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
+LIME = (0, 128, 0)
 MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
-COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
+MAROON = (128, 0, 0)
+WHITE = (250, 228, 225)
+COLORS = [RED, BLUE, YELLOW, GREEN, LIME, MAGENTA, CYAN, WHITE, MAROON]
 
 k = 0  # кол-во попаданий
 c = 0  # кол-во шариков в списке
@@ -40,7 +43,7 @@ def new_ball():
     x = randint(100, 700)
     y = randint(100, 500)
     r = randint(10, 100)
-    color = COLORS[randint(0, 5)]
+    color = COLORS[randint(0, 8)]
 
 
 def check():
@@ -56,6 +59,13 @@ def check():
         if (x_click - pool_x[i]) ** 2 + (y_click - pool_y[i]) ** 2 < pool_r[i] ** 2:
             k += 1
             flag = 1
+            pool_x.pop(i)
+            pool_y.pop(i)
+            pool_r.pop(i)
+            pool_color.pop(i)
+            pool_vx.pop(i)
+            pool_vy.pop(i)
+            break
     if flag == 1:
         print("Попал!")
     else:
@@ -66,8 +76,7 @@ def move_x():
     """Сдвигает все шарики из списка по горизонтали """
 
     for i in range(len(pool_x)):
-        if pool_x[i] - pool_r[i] <= 0:  # or (pool_x[i] + pool_r[i] >= 800):
-            # pool_vx[i] = -pool_vx[i]
+        if pool_x[i] - pool_r[i] <= 0:
             pool_vx[i] = uniform(1, 30)
         elif pool_x[i] + pool_r[i] >= 800:
             pool_vx[i] = -uniform(1, 30)
@@ -76,6 +85,8 @@ def move_x():
 
 
 def z():
+    """Выдаёт случайно или 1, или -1. На это число,
+    в случае столкновения шарика с вертикальными стенками, будет домножаться скорость по горизонтали"""
     exempli = randint(-1, 1)
     g = 0
     if exempli > 0:
@@ -90,8 +101,7 @@ def move_y():
 
     for i in range(len(pool_y)):
         if (pool_y[i] - pool_r[i] <= 0) or (pool_y[i] + pool_r[i] >= 600):
-            if (pool_x[i] - pool_r[i] >= 0) and (pool_x[i] + pool_r[i] <= 800):
-                pool_vx[i] = z()*pool_vx[i]
+            pool_vx[i] = z()*pool_vx[i]
             pool_vy[i] = -pool_vy[i]
         vy = pool_vy[i]
         pool_y[i] = pool_y[i] + vy
@@ -110,8 +120,7 @@ finished = False
 while not finished:
     clock.tick(FPS)
 
-    c += 1
-    if c < 5:
+    while len(pool_x) < 5:
         new_ball()
         pool_x.append(x)  # список х-координат центров шариков
         pool_y.append(y)
@@ -123,7 +132,6 @@ while not finished:
     move_x()
     move_y()
     draw()
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             print("Кол-во попаданий в шарики: ", k)
