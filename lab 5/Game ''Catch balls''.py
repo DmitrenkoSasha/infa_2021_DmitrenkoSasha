@@ -1,7 +1,7 @@
 import pygame
 from pygame.draw import *
 from random import randint, uniform
-import math
+
 
 pygame.init()
 
@@ -66,13 +66,23 @@ def move_x():
     """Сдвигает все шарики из списка по горизонтали """
 
     for i in range(len(pool_x)):
-        if (pool_x[i] - pool_r[i] <= 0) or (pool_x[i] + pool_r[i] >= 800):
-            rx = uniform(0, 1)
-            ry = math.sqrt((pool_vx[i]/pool_vy[i])**2 * (1-rx**2)+1)
-            pool_vx[i] = -rx*pool_vx[i]
-            pool_vy[i] = ry * pool_vy[i]
+        if pool_x[i] - pool_r[i] <= 0:  # or (pool_x[i] + pool_r[i] >= 800):
+            # pool_vx[i] = -pool_vx[i]
+            pool_vx[i] = uniform(1, 30)
+        elif pool_x[i] + pool_r[i] >= 800:
+            pool_vx[i] = -uniform(1, 30)
         vx = pool_vx[i]
         pool_x[i] = pool_x[i] + vx
+
+
+def z():
+    exempli = randint(-1, 1)
+    g = 0
+    if exempli > 0:
+        g = 1
+    elif exempli <= 0:
+        g = -1
+    return g
 
 
 def move_y():
@@ -80,10 +90,9 @@ def move_y():
 
     for i in range(len(pool_y)):
         if (pool_y[i] - pool_r[i] <= 0) or (pool_y[i] + pool_r[i] >= 600):
-            ry = uniform(0, 1)
-            rx = math.sqrt((pool_vy[i] / pool_vx[i]) ** 2 * (1 - ry ** 2) + 1)
-            pool_vy[i] = -ry * pool_vy[i]
-            pool_vx[i] = rx * pool_vx[i]
+            if (pool_x[i] - pool_r[i] >= 0) and (pool_x[i] + pool_r[i] <= 800):
+                pool_vx[i] = z()*pool_vx[i]
+            pool_vy[i] = -pool_vy[i]
         vy = pool_vy[i]
         pool_y[i] = pool_y[i] + vy
 
