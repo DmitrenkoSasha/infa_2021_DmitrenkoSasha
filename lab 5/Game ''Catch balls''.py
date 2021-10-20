@@ -1,11 +1,12 @@
 import pygame
 from pygame.draw import *
 from random import randint, uniform
+from math import sin, cos, pi
 
 
 pygame.init()
 
-FPS = 40
+FPS = 70
 screen = pygame.display.set_mode((800, 600))
 
 RED = (255, 0, 0)
@@ -46,6 +47,19 @@ def new_ball():
     color = COLORS[randint(0, 8)]
 
 
+def draw_regular_polygon(surface, color_regpoly, vertex_count, radius, position):
+    """
+    Рисует один из правильных многоугольников
+    position: координаты центра фигуры в скобках, например (200, 400)
+    """
+    n, r_regpoly = vertex_count, radius
+    x_regpoly, y_regpoly = position
+    pygame.draw.polygon(surface, color_regpoly, [
+        (x_regpoly + r_regpoly * cos(2 * pi * i / n), y_regpoly + r_regpoly * sin(2 * pi * i / n))
+        for i in range(n)
+    ])
+
+
 def check():
     """
     Проверяет, попал ли пользователь курсором в шарик
@@ -77,9 +91,9 @@ def move_x():
 
     for i in range(len(pool_x)):
         if pool_x[i] - pool_r[i] <= 0:
-            pool_vx[i] = uniform(1, 30)
+            pool_vx[i] = uniform(1, 20)
         elif pool_x[i] + pool_r[i] >= 800:
-            pool_vx[i] = -uniform(1, 30)
+            pool_vx[i] = -uniform(1, 20)
         vx = pool_vx[i]
         pool_x[i] = pool_x[i] + vx
 
@@ -107,7 +121,7 @@ def move_y():
         pool_y[i] = pool_y[i] + vy
 
 
-def draw():
+def draw_balls():
     """Рисует шарики из списка"""
     for i in range(len(pool_x)):
         circle(screen, pool_color[i], (pool_x[i], pool_y[i]), pool_r[i])
@@ -120,18 +134,20 @@ finished = False
 while not finished:
     clock.tick(FPS)
 
-    while len(pool_x) < 5:
+    amount_balls = 5  # Количество отображаемых шариков на экране
+    while len(pool_x) < amount_balls:
         new_ball()
         pool_x.append(x)  # список х-координат центров шариков
         pool_y.append(y)
         pool_r.append(r)
         pool_color.append(color)
-        pool_vx.append(uniform(-1, 1) * 30)
-        pool_vy.append(uniform(-1, 1) * 30)
+        pool_vx.append(uniform(-1, 1) * 20)
+        pool_vy.append(uniform(-1, 1) * 20)
 
     move_x()
     move_y()
-    draw()
+    draw_balls()
+    draw_regular_polygon(screen, color, 4, 20,  (100, 100))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             print("Кол-во попаданий в шарики: ", k)
