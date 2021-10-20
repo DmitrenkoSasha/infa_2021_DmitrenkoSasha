@@ -28,13 +28,6 @@ y = 0
 color = 0
 r = 0
 
-pool_x = []
-pool_y = []
-pool_r = []
-pool_color = []
-pool_vx = []
-pool_vy = []
-
 
 def new_ball():
     """
@@ -45,6 +38,14 @@ def new_ball():
     y = randint(100, 500)
     r = randint(10, 100)
     color = COLORS[randint(0, 8)]
+
+
+pool_x = []
+pool_y = []
+pool_r = []
+pool_color = []
+pool_vx = []
+pool_vy = []
 
 
 def draw_regular_polygon(surface, color_regpoly, vertex_count, radius, position):
@@ -58,6 +59,13 @@ def draw_regular_polygon(surface, color_regpoly, vertex_count, radius, position)
         (x_regpoly + r_regpoly * cos(2 * pi * i / n), y_regpoly + r_regpoly * sin(2 * pi * i / n))
         for i in range(n)
     ])
+
+
+pool_x_regpoly = []
+pool_y_regpoly = []
+pool_vertex_count = []
+pool_r_regpoly = []
+pool_color_regpoly = []
 
 
 def check():
@@ -144,9 +152,19 @@ while not finished:
         pool_vx.append(uniform(-1, 1) * 20)
         pool_vy.append(uniform(-1, 1) * 20)
 
+    amount_regular_polygon = 2  # Количество отображаемых шариков на экране
+    while len(pool_x_regpoly) < amount_regular_polygon:
+        pool_x_regpoly.append(x)
+        pool_y_regpoly.append(y)
+        pool_vertex_count.append(randint(3, 7))
+        pool_r_regpoly.append(r)
+        pool_color_regpoly.append(color)
     move_x()
     move_y()
     draw_balls()
+    for i in range(amount_regular_polygon):
+        draw_regular_polygon(screen, pool_color_regpoly[i], pool_vertex_count[i],
+                             pool_r_regpoly[i], (pool_x_regpoly[i], pool_y_regpoly[i]))
     draw_regular_polygon(screen, color, 4, 20,  (100, 100))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
