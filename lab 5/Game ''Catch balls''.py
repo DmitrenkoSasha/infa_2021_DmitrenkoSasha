@@ -29,9 +29,9 @@ color = 0
 r = 0
 
 
-def new_ball():
+def new_parameters():
     """
-    Добавляет новый шарик в список
+    Создаёт новые парарметры, общие для всех фигур
     """
     global x, y, color, r
     x = randint(100, 700)
@@ -48,9 +48,9 @@ pool_vx = []
 pool_vy = []
 
 
-def draw_regular_polygon(surface, color_regpoly, vertex_count, radius, position):
+def draw_one_regular_polygon(surface, color_regpoly, vertex_count, radius, position):
     """
-    Рисует один из правильных многоугольников
+    Рисует один правильный многоугольник.
     position: координаты центра фигуры в скобках, например (200, 400)
     """
     n, r_regpoly = vertex_count, radius
@@ -59,6 +59,14 @@ def draw_regular_polygon(surface, color_regpoly, vertex_count, radius, position)
         (x_regpoly + r_regpoly * cos(2 * pi * i / n), y_regpoly + r_regpoly * sin(2 * pi * i / n))
         for i in range(n)
     ])
+
+
+def draw_list_polygons():
+    """Рисует правильные многоугольники из списка. Отличается от функции draw_one_regular_polygon тем,
+    что не сама прорисовывает каждый многоугольник, а просит об этом draw_one_regular_polygon"""
+    for i in range(amount_regular_polygon):
+        draw_one_regular_polygon(screen, pool_color_regpoly[i], pool_vertex_count[i], pool_r_regpoly[i],
+                                 (pool_x_regpoly[i], pool_y_regpoly[i]))
 
 
 pool_x_regpoly = []
@@ -131,7 +139,7 @@ def move_y():
 
 def draw_balls():
     """Рисует шарики из списка"""
-    for i in range(len(pool_x)):
+    for i in range(amount_balls):
         circle(screen, pool_color[i], (pool_x[i], pool_y[i]), pool_r[i])
 
 
@@ -143,8 +151,8 @@ while not finished:
     clock.tick(FPS)
 
     amount_balls = 5  # Количество отображаемых шариков на экране
-    while len(pool_x) < amount_balls:
-        new_ball()
+    while len(pool_x) < amount_balls:  # Наполняем каждый список нужным количеством параметров каждого шарика
+        new_parameters()
         pool_x.append(x)  # список х-координат центров шариков
         pool_y.append(y)
         pool_r.append(r)
@@ -152,26 +160,28 @@ while not finished:
         pool_vx.append(uniform(-1, 1) * 20)
         pool_vy.append(uniform(-1, 1) * 20)
 
-    amount_regular_polygon = 2  # Количество отображаемых шариков на экране
-    while len(pool_x_regpoly) < amount_regular_polygon:
+    amount_regular_polygon = 2  # Количество отображаемых многоугольников на экране
+    while len(pool_x_regpoly) < amount_regular_polygon:  # Наполняем списки нужным количеством параметров каждой фигуры
+        new_parameters()
         pool_x_regpoly.append(x)
         pool_y_regpoly.append(y)
         pool_vertex_count.append(randint(3, 7))
         pool_r_regpoly.append(r)
         pool_color_regpoly.append(color)
-    move_x()
+
+    move_x()  # Двигает шарики по горизонтали
     move_y()
     draw_balls()
-    for i in range(amount_regular_polygon):
-        draw_regular_polygon(screen, pool_color_regpoly[i], pool_vertex_count[i],
-                             pool_r_regpoly[i], (pool_x_regpoly[i], pool_y_regpoly[i]))
-    draw_regular_polygon(screen, color, 4, 20,  (100, 100))
+    draw_list_polygons()
+
+    draw_one_regular_polygon(screen, color, 4, 20, (100, 100))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             print("Кол-во попаданий в шарики: ", k)
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             check()
+
     pygame.display.update()
     screen.fill(BLACK)
 
