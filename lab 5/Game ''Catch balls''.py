@@ -21,14 +21,15 @@ MAROON = (128, 0, 0)
 WHITE = (250, 228, 225)
 COLORS = [RED, BLUE, YELLOW, GREEN, LIME, MAGENTA, CYAN, WHITE, MAROON]
 
-k = 0  # кол-во попаданий
+k_ball = 0  # кол-во попаданий в шарики
+k_poly = 0  # кол-во попаданий в многоугольники
 c = 0  # счётчик времени жизни многоугольника
 x = 0
 y = 0
 color = 0
 r = 0
-amount_regular_polygon = 2  # Количество отображаемых многоугольников на экране
-live_time_poly = 0.5  # Время жизни многоугольников на экране в секундах
+amount_regular_polygon = 1  # Количество отображаемых многоугольников на экране
+live_time_poly = 0.7  # Время жизни многоугольников на экране в секундах
 
 
 def new_parameters():
@@ -78,30 +79,39 @@ pool_r_regpoly = []
 pool_color_regpoly = []
 
 
-def check():
+def check_ball():
     """
-    Проверяет, попал ли пользователь курсором в шарик
-    :return: "Попал!" или "Мимо!"
+    Проверяет, попал ли пользователь курсором в шарики
     """
-    global k
-    flag = 0
+    global k_ball
     x_click = pygame.mouse.get_pos()[0]  # координата нажатия курсора по горизонтали
     y_click = pygame.mouse.get_pos()[1]  # координата нажатия курсора по вертикали
-    for i in range(len(pool_x)):
+    for i in range(amount_balls):
         if (x_click - pool_x[i]) ** 2 + (y_click - pool_y[i]) ** 2 < pool_r[i] ** 2:
-            k += 1
-            flag = 1
+            k_ball += 1
             pool_x.pop(i)
             pool_y.pop(i)
             pool_r.pop(i)
             pool_color.pop(i)
             pool_vx.pop(i)
             pool_vy.pop(i)
-            break
-    if flag == 1:
-        print("Попал!")
-    else:
-        print("Мимо!")
+            break  # Если мы убедились, что в i-ый шарик попали, то дальше можно не проверять
+
+
+def check_poly():
+    """
+    Проверяет, попал ли пользователь курсором в многоугольник
+    """
+    global k_poly
+    x_click = pygame.mouse.get_pos()[0]  # координата нажатия курсора по горизонтали
+    y_click = pygame.mouse.get_pos()[1]  # координата нажатия курсора по вертикали
+    for i in range(amount_regular_polygon):
+        r_vpis = pool_r_regpoly[i] * cos(pi / pool_vertex_count[i])
+        print(r_vpis)
+        if (x_click - pool_x_regpoly[i]) ** 2 + (y_click - pool_y_regpoly[i]) ** 2 < r_vpis ** 2:
+            k_poly += 1
+            print("Попал!")
+            break  # Если мы убедились, что в i-ый многоугольник попали, то дальше можно не проверять
 
 
 def move_x():
@@ -149,12 +159,15 @@ pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
 
+# Наполняем вначале списки с параметрами многоугольников,
+# чтобы вначале (при с/FPS < live_time_poly) draw_list_polygons() мог что-нибудь нарисовать
 while len(pool_x_regpoly) < amount_regular_polygon:
-        pool_x_regpoly.append(x)
-        pool_y_regpoly.append(y)
-        pool_vertex_count.append(randint(3, 7))
-        pool_r_regpoly.append(r)
-        pool_color_regpoly.append(color)
+    pool_x_regpoly.append(x)
+    pool_y_regpoly.append(y)
+    pool_vertex_count.append(randint(3, 7))
+    pool_r_regpoly.append(r)
+    pool_color_regpoly.append(color)
+
 
 while not finished:
     clock.tick(FPS)
@@ -185,13 +198,14 @@ while not finished:
     draw_balls()
     draw_list_polygons()
 
-    draw_one_regular_polygon(screen, color, 4, 20, (100, 100))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            print("Кол-во попаданий в шарики: ", k)
+            print("Кол-во попаданий в шарики: ", k_ball)
+            print("Кол-во попаданий в многоугольники: ", k_poly)
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            check()
+            check_ball()
+            check_poly()
 
     pygame.display.update()
     screen.fill(BLACK)
