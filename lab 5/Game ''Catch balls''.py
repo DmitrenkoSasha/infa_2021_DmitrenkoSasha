@@ -22,11 +22,13 @@ WHITE = (250, 228, 225)
 COLORS = [RED, BLUE, YELLOW, GREEN, LIME, MAGENTA, CYAN, WHITE, MAROON]
 
 k = 0  # кол-во попаданий
-c = 0  # кол-во шариков в списке
+c = 0  # счётчик времени жизни многоугольника
 x = 0
 y = 0
 color = 0
 r = 0
+amount_regular_polygon = 2  # Количество отображаемых многоугольников на экране
+live_time_poly = 0.5  # Время жизни многоугольников на экране в секундах
 
 
 def new_parameters():
@@ -143,25 +145,20 @@ def draw_balls():
         circle(screen, pool_color[i], (pool_x[i], pool_y[i]), pool_r[i])
 
 
-amount_regular_polygon = 2  # Количество отображаемых многоугольников на экране
-
-
-def nulls_list_regpoly():
-    """Заполняет нулями списки с параметрами многоугольников, чтобы потом можно было менять элементы этих списков"""
-    while len(pool_x_regpoly) < amount_regular_polygon:  # Наполняем списки нужным количеством параметров каждой фигуры
-        pool_x_regpoly.append(0)
-        pool_y_regpoly.append(0)
-        pool_vertex_count.append(0)
-        pool_r_regpoly.append(0)
-        pool_color_regpoly.append(0)
-
-
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
 
+while len(pool_x_regpoly) < amount_regular_polygon:
+        pool_x_regpoly.append(x)
+        pool_y_regpoly.append(y)
+        pool_vertex_count.append(randint(3, 7))
+        pool_r_regpoly.append(r)
+        pool_color_regpoly.append(color)
+
 while not finished:
     clock.tick(FPS)
+    c += 1  # С каждым тиком время жизни многоугольника увеличивается на 1 тик
 
     amount_balls = 5  # Количество отображаемых шариков на экране
     while len(pool_x) < amount_balls:  # Наполняем каждый список нужным количеством параметров каждого шарика
@@ -173,14 +170,15 @@ while not finished:
         pool_vx.append(uniform(-1, 1) * 20)
         pool_vy.append(uniform(-1, 1) * 20)
 
-    nulls_list_regpoly()
-    for j in range(amount_regular_polygon):  # Изменяем каждый элемент списков на нужный параметр каждой фигуры
-        new_parameters()
-        pool_x_regpoly[j] = x
-        pool_y_regpoly[j] = y
-        pool_vertex_count[j] = randint(3, 7)
-        pool_r_regpoly[j] = r
-        pool_color_regpoly[j] = color
+    if c/FPS >= live_time_poly:  # Условие обновления многоугольников на экране
+        c = 0
+        for j in range(amount_regular_polygon):  # Изменяем каждый элемент списков на нужный параметр каждой фигуры
+            new_parameters()
+            pool_x_regpoly[j] = x
+            pool_y_regpoly[j] = y
+            pool_vertex_count[j] = randint(3, 7)
+            pool_r_regpoly[j] = r
+            pool_color_regpoly[j] = color
 
     move_x()  # Двигает шарики по горизонтали
     move_y()
