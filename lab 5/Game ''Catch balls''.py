@@ -9,6 +9,9 @@ pygame.init()
 FPS = 70
 screen = pygame.display.set_mode((800, 600))
 
+pygame.font.init()
+myfont = pygame.font.SysFont('Comic Sans MS', 30)
+
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
@@ -30,6 +33,20 @@ color = 0
 r = 0
 amount_regular_polygon = 1  # Количество отображаемых многоугольников на экране
 live_time_poly = 0.7  # Время жизни многоугольников на экране в секундах
+
+
+def draw_score(score):
+    """
+    Draws score.
+    :param score: Score
+    :type score: float
+    :return: None
+    :rtype: None
+    """
+    textsurface = myfont.render('Your Score: ' + str(score), False, BLACK)
+    screen.blit(textsurface, (20, 20))
+    textsurface = myfont.render('Your Score: ' + str(score), False, WHITE)
+    screen.blit(textsurface, (20, 20))
 
 
 def new_parameters():
@@ -192,10 +209,12 @@ while not finished:
             pool_r_regpoly[j] = r
             pool_color_regpoly[j] = color
 
+    Score = k_poly + k_ball
     move_x()  # Двигает шарики по горизонтали
     move_y()
     draw_balls()
     draw_list_polygons()
+    draw_score(Score)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -218,4 +237,5 @@ output.write(name)
 output.write(s)
 output.write('\n')
 output.close()
+
 pygame.quit()
