@@ -2,6 +2,7 @@ import pygame
 from pygame.draw import *
 from random import randint, uniform
 from math import sin, cos, pi
+from operator import itemgetter
 
 
 pygame.init()
@@ -10,7 +11,7 @@ FPS = 70
 screen = pygame.display.set_mode((800, 600))
 
 pygame.font.init()
-myfont = pygame.font.SysFont('Comic Sans MS', 30)
+myfont = pygame.font.SysFont('Comic Sans MS', 30)  # Поверхность с отображением кол-ва очков
 
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
@@ -26,6 +27,7 @@ COLORS = [RED, BLUE, YELLOW, GREEN, LIME, MAGENTA, CYAN, WHITE, MAROON]
 
 k_ball = 0  # кол-во попаданий в шарики
 k_poly = 0  # кол-во попаданий в многоугольники
+points = 0  # очки
 c = 0  # счётчик времени жизни многоугольника
 x = 0
 y = 0
@@ -33,6 +35,8 @@ color = 0
 r = 0
 amount_regular_polygon = 1  # Количество отображаемых многоугольников на экране
 live_time_poly = 0.7  # Время жизни многоугольников на экране в секундах
+r_min = 30  # Миним. радиус шарика, мин. впис. радиус многоугольника
+r_max = 100
 
 
 def draw_score(score):
@@ -56,7 +60,7 @@ def new_parameters():
     global x, y, color, r
     x = randint(100, 700)
     y = randint(100, 500)
-    r = randint(10, 100)
+    r = randint(r_min, r_max)
     color = COLORS[randint(0, 8)]
 
 
@@ -100,12 +104,13 @@ def check_ball():
     """
     Проверяет, попал ли пользователь курсором в шарики
     """
-    global k_ball
+    global k_ball, points
     x_click = pygame.mouse.get_pos()[0]  # координата нажатия курсора по горизонтали
-    y_click = pygame.mouse.get_pos()[1]  # координата нажатия курсора по вертикали
+    y_click = pygame.mouse.get_pos()[1]  # по вертикали
     for i in range(amount_balls):
         if (x_click - pool_x[i]) ** 2 + (y_click - pool_y[i]) ** 2 < pool_r[i] ** 2:
             k_ball += 1
+            points += (pool_vx[i]**2+pool_vy[i]**2)**(1/2)/pool_r[i]
             pool_x.pop(i)
             pool_y.pop(i)
             pool_r.pop(i)
@@ -119,13 +124,14 @@ def check_poly():
     """
     Проверяет, попал ли пользователь курсором в многоугольник
     """
-    global k_poly
+    global k_poly, points
     x_click = pygame.mouse.get_pos()[0]  # координата нажатия курсора по горизонтали
-    y_click = pygame.mouse.get_pos()[1]  # координата нажатия курсора по вертикали
+    y_click = pygame.mouse.get_pos()[1]  # по вертикали
     for i in range(amount_regular_polygon):
         r_vpis = pool_r_regpoly[i] * cos(pi / pool_vertex_count[i])
         if (x_click - pool_x_regpoly[i]) ** 2 + (y_click - pool_y_regpoly[i]) ** 2 < r_vpis ** 2:
             k_poly += 1
+            points += 20/r_vpis
             break  # Если мы убедились, что в i-ый многоугольник попали, то дальше можно не проверять
 
 
@@ -170,11 +176,41 @@ def draw_balls():
         circle(screen, pool_color[i], (pool_x[i], pool_y[i]), pool_r[i])
 
 
+scores = []
+
+
+def sort_results(text, score):
+    """вносит результаты игрока в таблицу результатов и отсортировывает её
+    :param text: имя игрока
+    :param score: счёт игрока
+    """
+    table = open ('table.txt', 'w')
+    with open ('scores.txt', 'a') as output:
+      print(text, '"', score, file = output)
+    with open ('scores.txt', 'r') as f:
+      for string in range (0, 1000, 1):
+        stroka = f.readline()
+        if stroka != '':
+            pairs = stroka.split('" ')
+            scores.append(pairs)
+            a = scores[string][1]
+            a.rstrip('\n')
+            a = int (a)
+            scores[string][1] = a
+    new_list = sorted(scores, key=itemgetter(1))
+    new_list.reverse()
+    print('Results table', file = table)
+    for i in range (0, len(new_list), 1):
+      new_list[i][1] = str (new_list[i][1])
+      print(''.join(new_list[i]), file = table)
+    table.close()
+
+
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
 
-# Наполняем вначале списки с параметрами многоугольников,
+# Наполняем списки с параметрами многоугольников,
 # чтобы вначале (при с/FPS < live_time_poly) draw_list_polygons() мог что-нибудь нарисовать
 while len(pool_x_regpoly) < amount_regular_polygon:
     pool_x_regpoly.append(x)
@@ -189,6 +225,7 @@ while not finished:
     clock.tick(FPS)
     c += 1  # С каждым тиком время жизни многоугольника увеличивается на 1 тик
 
+    koef_v = 15  # Коэф. скорости шариков = макс. скорость при uniform = 1
     amount_balls = 5  # Количество отображаемых шариков на экране
     while len(pool_x) < amount_balls:  # Наполняем каждый список нужным количеством параметров каждого шарика
         new_parameters()
@@ -196,8 +233,8 @@ while not finished:
         pool_y.append(y)
         pool_r.append(r)
         pool_color.append(color)
-        pool_vx.append(uniform(-1, 1) * 15)
-        pool_vy.append(uniform(-1, 1) * 15)
+        pool_vx.append(uniform(-1, 1) * koef_v)
+        pool_vy.append(uniform(-1, 1) * koef_v)
 
     if c/FPS >= live_time_poly:  # Условие обновления многоугольников на экране
         c = 0
@@ -209,18 +246,19 @@ while not finished:
             pool_r_regpoly[j] = r
             pool_color_regpoly[j] = color
 
-    Score = k_poly + k_ball
     move_x()  # Двигает шарики по горизонтали
     move_y()
     draw_balls()
     draw_list_polygons()
-    draw_score(Score)
+
+    draw_score(round(points*100))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             print(name, ":")
             print("Кол-во попаданий в шарики: ", k_ball)
             print("Кол-во попаданий в многоугольники: ", k_poly)
+            sort_results(name, int(round(points*100)))
 
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -229,13 +267,14 @@ while not finished:
 
     pygame.display.update()
     screen.fill(BLACK)
-output = open('Рейтинг игроков .txt', 'a')
+
+'''output = open('Рейтинг игроков .txt', 'a')
 
 s = str(k_ball)
 name = str(name)
 output.write(name)
 output.write(s)
 output.write('\n')
-output.close()
+output.close()'''
 
 pygame.quit()
