@@ -107,10 +107,8 @@ def check_poly():
     y_click = pygame.mouse.get_pos()[1]  # координата нажатия курсора по вертикали
     for i in range(amount_regular_polygon):
         r_vpis = pool_r_regpoly[i] * cos(pi / pool_vertex_count[i])
-        print(r_vpis)
         if (x_click - pool_x_regpoly[i]) ** 2 + (y_click - pool_y_regpoly[i]) ** 2 < r_vpis ** 2:
             k_poly += 1
-            print("Попал!")
             break  # Если мы убедились, что в i-ый многоугольник попали, то дальше можно не проверять
 
 
@@ -119,9 +117,9 @@ def move_x():
 
     for i in range(len(pool_x)):
         if pool_x[i] - pool_r[i] <= 0:
-            pool_vx[i] = uniform(1, 20)
+            pool_vx[i] = uniform(1, 15)
         elif pool_x[i] + pool_r[i] >= 800:
-            pool_vx[i] = -uniform(1, 20)
+            pool_vx[i] = -uniform(1, 15)
         vx = pool_vx[i]
         pool_x[i] = pool_x[i] + vx
 
@@ -168,7 +166,8 @@ while len(pool_x_regpoly) < amount_regular_polygon:
     pool_r_regpoly.append(r)
     pool_color_regpoly.append(color)
 
-
+print("Введите своё имя: ")
+name = input()
 while not finished:
     clock.tick(FPS)
     c += 1  # С каждым тиком время жизни многоугольника увеличивается на 1 тик
@@ -180,8 +179,8 @@ while not finished:
         pool_y.append(y)
         pool_r.append(r)
         pool_color.append(color)
-        pool_vx.append(uniform(-1, 1) * 20)
-        pool_vy.append(uniform(-1, 1) * 20)
+        pool_vx.append(uniform(-1, 1) * 15)
+        pool_vy.append(uniform(-1, 1) * 15)
 
     if c/FPS >= live_time_poly:  # Условие обновления многоугольников на экране
         c = 0
@@ -200,8 +199,10 @@ while not finished:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            print(name, ":")
             print("Кол-во попаданий в шарики: ", k_ball)
             print("Кол-во попаданий в многоугольники: ", k_poly)
+
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             check_ball()
@@ -209,5 +210,12 @@ while not finished:
 
     pygame.display.update()
     screen.fill(BLACK)
+output = open('Рейтинг игроков .txt', 'a')
 
+s = str(k_ball)
+name = str(name)
+output.write(name)
+output.write(s)
+output.write('\n')
+output.close()
 pygame.quit()
