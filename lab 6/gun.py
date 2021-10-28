@@ -150,8 +150,8 @@ class Target:
     def draw(self):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
 
-    def new_target(self):
-        """Удаляет старую мишень, создаёт новую"""
+
+
 
 
 class Game:
@@ -159,6 +159,10 @@ class Game:
         self.balls = []
         self.bullets = 0
         self.gun = Gun()
+        self.target = Target()
+
+    def new_target(self):
+        """Удаляет старую мишень, создаёт новую"""
         self.target = Target()
 
     def draw_score(score):
@@ -196,18 +200,18 @@ class Game:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.gun.fire2_start()
                 elif event.type == pygame.MOUSEBUTTONUP:
-                    new_ball = self.gun.fire2_end(event)
+                    new_ball = self.gun.fire2_end(event)  # Новый шарик вылетает из пушки после отпускания кнопки мыши
                     self.bullets += 1
-                    self.balls.append(new_ball)
+                    self.balls.append(new_ball)  # Новый шарик записан в список
                 elif event.type == pygame.MOUSEMOTION:
-                    self.gun.targetting(event)
+                    self.gun.targetting(event)  # Пушка поворачивается за мышью
 
             for b in self.balls:
                 b.move()
                 if b.hit_test(self.target) and self.target.live == 1:
                     self.target.live = 0
                     self.target.hit()
-                    self.target.new_target()
+                    self.new_target()
             self.gun.power_up()
 
         pygame.quit()
@@ -222,6 +226,7 @@ def main():
 
     game = Game()
     game.mainloop()
+    #game.draw_score(1)
 
 
 if __name__ == '__main__':
