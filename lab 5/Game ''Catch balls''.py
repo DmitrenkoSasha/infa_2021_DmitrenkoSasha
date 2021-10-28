@@ -32,7 +32,7 @@ x = 0
 y = 0
 color = 0
 r = 0
-amount_regular_polygon = 1  # Количество отображаемых многоугольников на экране
+amount_regular_polygon = 2  # Количество отображаемых многоугольников на экране
 live_time_poly = 0.7  # Время жизни многоугольников на экране в секундах
 r_min = 30  # Миним. радиус шарика, мин. впис. радиус многоугольника
 r_max = 100
@@ -82,12 +82,12 @@ def draw_one_regular_polygon(surface, color_regpoly, vertex_count, radius, posit
     ])
 
 
-def draw_list_polygons():
+def draw_list_polygons(list_x_regpoly, list_y_regpoly, list_vertex_count, list_color_regpoly, list_r_regpoly, amount):
     """Рисует правильные многоугольники из списка. Отличается от функции draw_one_regular_polygon тем,
     что не сама прорисовывает каждый многоугольник, а просит об этом draw_one_regular_polygon"""
-    for i in range(amount_regular_polygon):
-        draw_one_regular_polygon(screen, pool_color_regpoly[i], pool_vertex_count[i], pool_r_regpoly[i],
-                                 (pool_x_regpoly[i], pool_y_regpoly[i]))
+    for a in range(amount):
+        draw_one_regular_polygon(screen, list_color_regpoly[a], list_vertex_count[a], list_r_regpoly[a],
+                                 (list_x_regpoly[a], list_y_regpoly[a]))
 
 
 pool_x_regpoly = []
@@ -97,24 +97,24 @@ pool_r_regpoly = []
 pool_color_regpoly = []
 
 
-def check_ball():
+def check_ball(list_x, list_y, list_vx, list_vy, list_r, list_color_ball, amount):
     """
     Проверяет, попал ли пользователь курсором в шарики
     """
     global k_ball, points
     x_click = pygame.mouse.get_pos()[0]  # координата нажатия курсора по горизонтали
     y_click = pygame.mouse.get_pos()[1]  # по вертикали
-    for i in range(amount_balls):
-        if (x_click - pool_x[i]) ** 2 + (y_click - pool_y[i]) ** 2 < pool_r[i] ** 2:
+    for y in range(amount):
+        if (x_click - list_x[y]) ** 2 + (y_click - list_y[y]) ** 2 < list_r[y] ** 2:
             k_ball += 1
-            points += (pool_vx[i] ** 2 + pool_vy[i] ** 2) ** (1 / 2) / pool_r[i]
-            pool_x.pop(i)
-            pool_y.pop(i)
-            pool_r.pop(i)
-            pool_color.pop(i)
-            pool_vx.pop(i)
-            pool_vy.pop(i)
-            break  # Если мы убедились, что в i-ый шарик попали, то дальше можно не проверять
+            points += (list_vx[y] ** 2 + list_vy[y] ** 2) ** (1 / 2) / list_r[y]
+            list_x.pop(y)
+            list_y.pop(y)
+            list_r.pop(y)
+            list_color_ball.pop(y)
+            list_vx.pop(y)
+            list_vy.pop(y)
+            break  # Если мы убедились, что в y-ый шарик попали, то дальше можно не проверять
 
 
 def check_poly():
@@ -249,7 +249,8 @@ while not finished:
     move_x()  # Двигает шарики по горизонтали
     move_y()
     draw_balls()
-    draw_list_polygons()
+    draw_list_polygons(pool_x_regpoly, pool_y_regpoly, pool_vertex_count, pool_color_regpoly, pool_r_regpoly,
+                       amount_regular_polygon)
 
     draw_score(round(points * 100))
 
@@ -262,7 +263,7 @@ while not finished:
 
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            check_ball()
+            check_ball(pool_x, pool_y, pool_vx, pool_vy, pool_r, pool_color, amount_balls)
             check_poly()
 
     pygame.display.update()
