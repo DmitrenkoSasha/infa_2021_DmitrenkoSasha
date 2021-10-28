@@ -45,7 +45,14 @@ class Ball:
         """
         # FIXME
         self.x += self.vx
+        if self.x >= 800 or self.x <= 0:
+            self.vx = -self.vx
         self.y -= self.vy
+        if self.y <= 0:
+            self.vy = -self.vy
+        if self.y >= 600:
+            self.vy = 0
+            self.vx = 0
 
     def draw(self):
         pygame.draw.circle(
@@ -71,10 +78,10 @@ class Gun:
     def __init__(self):
         self.f2_power = 10
         self.f2_on = 0
-        self.an = 1
+        self.angle = 1
         self.color = GREY
 
-    def fire2_start(self, event):
+    def fire2_start(self):
         self.f2_on = 1
 
     def fire2_end(self, event):
@@ -85,9 +92,9 @@ class Gun:
         """
         new_ball = Ball()
         new_ball.r += 5
-        self.an = math.atan2((event.pos[1] - new_ball.y), (event.pos[0] - new_ball.x))
-        new_ball.vx = self.f2_power * math.cos(self.an)
-        new_ball.vy = - self.f2_power * math.sin(self.an)
+        self.angle = math.atan2((event.pos[1] - new_ball.y), (event.pos[0] - new_ball.x))
+        new_ball.vx = self.f2_power * math.cos(self.angle)
+        new_ball.vy = - self.f2_power * math.sin(self.angle)
         self.f2_on = 0
         self.f2_power = 10
 
@@ -96,18 +103,19 @@ class Gun:
     def targetting(self, event):
         """Прицеливание. Зависит от положения мыши."""
         if event:
-            self.an = math.atan((event.pos[1] - 450) / (event.pos[0] - 20))
-        if self.f2_on:
+            self.angle = math.atan((event.pos[1] - 450) / (event.pos[0] - 20))
+        elif self.f2_on:
             self.color = RED
         else:
             self.color = GREY
 
     def draw(self):
         # FIXME don't know how to do it
+        pygame.draw.rect(screen, self.color, [40, 450, 80, 10])
         pass
 
     def power_up(self):
-        if self.f2_on:
+        if self.f2_on == 1:
             if self.f2_power < 100:
                 self.f2_power += 1
             self.color = RED
@@ -122,7 +130,7 @@ class Target:
         self.live = 1
         self.x = randint(600, 780)
         self.y = randint(300, 550)
-        self.r = randint(2, 50)
+        self.r = randint(20, 50)
         self.color = RED
 
     def hit(self, points=1):
@@ -130,12 +138,7 @@ class Target:
         self.points += points
 
     def draw(self):
-        pygame.draw.circle(
-            screen,
-            self.color,
-            (self.x, self.y),
-            self.r
-        )
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
 
 
 class Game:
@@ -162,7 +165,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     finished = True
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.gun.fire2_start(event)
+                    self.gun.fire2_start()
                 elif event.type == pygame.MOUSEBUTTONUP:
                     new_ball = self.gun.fire2_end(event)
                     self.bullets += 1
@@ -188,6 +191,6 @@ def main():
     game = Game()
     game.mainloop()
 
+
 if __name__ == '__main__':
-        screen = None
-        main()
+    main()
