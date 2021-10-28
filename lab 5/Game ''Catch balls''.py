@@ -104,29 +104,29 @@ def check_ball(list_x, list_y, list_vx, list_vy, list_r, list_color_ball, amount
     global k_ball, points
     x_click = pygame.mouse.get_pos()[0]  # координата нажатия курсора по горизонтали
     y_click = pygame.mouse.get_pos()[1]  # по вертикали
-    for y in range(amount):
-        if (x_click - list_x[y]) ** 2 + (y_click - list_y[y]) ** 2 < list_r[y] ** 2:
+    for i in range(amount):
+        if (x_click - list_x[i]) ** 2 + (y_click - list_y[i]) ** 2 < list_r[i] ** 2:
             k_ball += 1
-            points += (list_vx[y] ** 2 + list_vy[y] ** 2) ** (1 / 2) / list_r[y]
-            list_x.pop(y)
-            list_y.pop(y)
-            list_r.pop(y)
-            list_color_ball.pop(y)
-            list_vx.pop(y)
-            list_vy.pop(y)
-            break  # Если мы убедились, что в y-ый шарик попали, то дальше можно не проверять
+            points += (list_vx[i] ** 2 + list_vy[i] ** 2) ** (1 / 2) / list_r[i]
+            list_x.pop(i)
+            list_y.pop(i)
+            list_r.pop(i)
+            list_color_ball.pop(i)
+            list_vx.pop(i)
+            list_vy.pop(i)
+            break  # Если мы убедились, что в i-ый шарик попали, то дальше можно не проверять
 
 
-def check_poly():
+def check_poly(list_x_regpoly, list_y_regpoly, list_vertex_count, list_r_regpoly, amount):
     """
     Проверяет, попал ли пользователь курсором в многоугольник
     """
     global k_poly, points
     x_click = pygame.mouse.get_pos()[0]  # координата нажатия курсора по горизонтали
     y_click = pygame.mouse.get_pos()[1]  # по вертикали
-    for i in range(amount_regular_polygon):
-        r_vpis = pool_r_regpoly[i] * cos(pi / pool_vertex_count[i])
-        if (x_click - pool_x_regpoly[i]) ** 2 + (y_click - pool_y_regpoly[i]) ** 2 < r_vpis ** 2:
+    for i in range(amount):
+        r_vpis = list_r_regpoly[i] * cos(pi / list_vertex_count[i])
+        if (x_click - list_x_regpoly[i]) ** 2 + (y_click - list_y_regpoly[i]) ** 2 < r_vpis ** 2:
             k_poly += 1
             points += 20 / r_vpis
             break  # Если мы убедились, что в i-ый многоугольник попали, то дальше можно не проверять
@@ -264,7 +264,7 @@ while not finished:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             check_ball(pool_x, pool_y, pool_vx, pool_vy, pool_r, pool_color, amount_balls)
-            check_poly()
+            check_poly(pool_x_regpoly, pool_y_regpoly, pool_vertex_count, pool_r_regpoly, amount_regular_polygon)
 
     pygame.display.update()
     screen.fill(BLACK)
