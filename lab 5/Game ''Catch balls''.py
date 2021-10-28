@@ -100,6 +100,14 @@ pool_color_regpoly = []
 def check_ball(list_x, list_y, list_vx, list_vy, list_r, list_color_ball, amount):
     """
     Проверяет, попал ли пользователь курсором в шарики
+
+    list_x: список коорд. каждого центра шарика по гориз.
+    list_y:  список коорд. кцентра шарика по вертикали
+    list_vx: список скоростей каждого шарика по гориз.
+    list_vy: список скоростей каждого шарика по вертик.
+    list_r: список радиусов шариков
+    list_color_ball: список с цветами каждого шарика
+    amount: кол-во шариков
     """
     global k_ball, points
     x_click = pygame.mouse.get_pos()[0]  # координата нажатия курсора по горизонтали
@@ -120,6 +128,13 @@ def check_ball(list_x, list_y, list_vx, list_vy, list_r, list_color_ball, amount
 def check_poly(list_x_regpoly, list_y_regpoly, list_vertex_count, list_r_regpoly, amount):
     """
     Проверяет, попал ли пользователь курсором в многоугольник
+
+    list_x_regpoly: список коорд. каждого центра многоугольника по гориз.
+    list_y_regpoly:  список коорд. центра многоугольника по вертикали
+    list_vertex_count: список с количеством вершин каждого многоугольника
+    list_r_regpoly: список радиусов многоугольников
+    list_color_ball: список с цветами каждого многоугольника
+    amount: кол-во многоугольников
     """
     global k_poly, points
     x_click = pygame.mouse.get_pos()[0]  # координата нажатия курсора по горизонтали
@@ -132,16 +147,21 @@ def check_poly(list_x_regpoly, list_y_regpoly, list_vertex_count, list_r_regpoly
             break  # Если мы убедились, что в i-ый многоугольник попали, то дальше можно не проверять
 
 
-def move_x():
-    """Сдвигает все шарики из списка по горизонтали """
+def move_x(list_x, list_vx, list_r, amount):
+    """Сдвигает все шарики из списка по горизонтали
+    amount: кол-во шариков
+    list_x:  список коорд. по гориз. центров шариков
+    list_vx: список скоростей каждого шарика по гориз.
+    list_r: список радиусов шариков
+    """
 
-    for i in range(len(pool_x)):
-        if pool_x[i] - pool_r[i] <= 0:
-            pool_vx[i] = uniform(1, 15)
-        elif pool_x[i] + pool_r[i] >= 800:
-            pool_vx[i] = -uniform(1, 15)
-        vx = pool_vx[i]
-        pool_x[i] = pool_x[i] + vx
+    for i in range(amount):
+        if list_x[i] - list_r[i] <= 0:
+            list_vx[i] = uniform(1, 15)
+        elif list_x[i] + list_r[i] >= 800:
+            list_vx[i] = -uniform(1, 15)
+        vx = list_vx[i]
+        list_x[i] = list_x[i] + vx
 
 
 def z():
@@ -156,24 +176,36 @@ def z():
     return g
 
 
-def move_y():
-    """Сдвигает все шарики из списка по вертикали """
+def move_y(list_y, list_vx, list_vy, list_r, amount):
+    """Сдвигает все шарики из списка по вертикали
+     amount: кол-во шариков
+    list_y:  список коорд. по вертикали центров шариков
+    list_vx: список скоростей каждого шарика по гориз.
+    list_vy: список скоростей каждого шарика по вертик.
+    list_r: список радиусов шариков
+    """
 
-    for i in range(len(pool_y)):
-        if (pool_y[i] - pool_r[i] <= 0) or (pool_y[i] + pool_r[i] >= 600):
-            pool_vx[i] = z() * pool_vx[i]
-            pool_vy[i] = -pool_vy[i]
-        vy = pool_vy[i]
-        pool_y[i] = pool_y[i] + vy
+    for i in range(amount):
+        if (list_y[i] - list_r[i] <= 0) or (list_y[i] + list_r[i] >= 600):
+            list_vx[i] = z() * list_vx[i]
+            list_vy[i] = -list_vy[i]
+        vy = list_vy[i]
+        list_y[i] = list_y[i] + vy
 
 
-def draw_balls():
-    """Рисует шарики из списка"""
-    for i in range(amount_balls):
-        circle(screen, pool_color[i], (pool_x[i], pool_y[i]), pool_r[i])
+def draw_balls(amount, list_x, list_y, list_r, list_color_ball):
+    """Рисует шарики, беря их данные из списков
+    amount: кол-во шариков
+    list_x: список коорд. каждого центра шарика по гориз.
+    list_y:  список коорд. кцентра шарика по вертикали
+    list_r: список радиусов шариков
+    list_color_ball: список с цветами каждого шарика
+    """
+    for i in range(amount):
+        circle(screen, list_color_ball[i], (list_x[i], list_y[i]), list_r[i])
 
 
-scores = []  # Здесь будут данные в хронометрическом порядке
+scores = []  # Здесь будут данные в хронологическом порядке
 
 
 def sort_results(text, score):
@@ -246,9 +278,9 @@ while not finished:
             pool_r_regpoly[j] = r
             pool_color_regpoly[j] = color
 
-    move_x()  # Двигает шарики по горизонтали
-    move_y()
-    draw_balls()
+    move_x(pool_x, pool_vx, pool_r, amount_balls)  # Двигает шарики по горизонтали
+    move_y(pool_y, pool_vx, pool_vy, pool_r, amount_balls)
+    draw_balls(amount_balls, pool_x, pool_y, pool_r, pool_color)
     draw_list_polygons(pool_x_regpoly, pool_y_regpoly, pool_vertex_count, pool_color_regpoly, pool_r_regpoly,
                        amount_regular_polygon)
 
