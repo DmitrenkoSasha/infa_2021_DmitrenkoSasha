@@ -62,7 +62,7 @@ class Ball:
             self.r
         )
 
-    def hittest(self, obj):
+    def hit_test(self, obj):
         """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
 
         Args:
@@ -70,8 +70,12 @@ class Ball:
         Returns:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
+        if (self.x - obj.x)**2 + (self.y - obj.y)**2 <= obj.r**2:
+            return True
+        else:
+            return False
         # FIXME
-        return False
+
 
 
 class Gun:
@@ -82,6 +86,8 @@ class Gun:
         self.color = GREY
         self.lenght = 80
         self.width = 10
+        self.x = 40
+        self.y = 450
 
     def fire2_start(self):
         self.f2_on = 1
@@ -112,14 +118,11 @@ class Gun:
             self.color = GREY
 
     def draw(self):
-        # FIXME don't know how to do it
-        pygame.draw.polygon(screen, self.color, [[40, 450], [40 + self.width * math.sin(self.angle), 450 + math.cos(self.angle) * self.width],
-                                                 [40 + math.cos(self.angle) * self.lenght, 450 + math.sin(self.angle) * self.lenght],
-                                                  [40 + math.cos(self.angle) * self.lenght + self.width * math.sin(self.angle),
-                                                   450 + math.sin(self.angle) * self.lenght - math.cos(self.angle) * self.width]])
-
-
-
+        """Рисует пушку. Ствол смотрит на точку, куда наведён курсор."""
+        pygame.draw.polygon(screen, self.color, [[self.x, self.y], [self.x + self.width * math.sin(self.angle), self.y + math.cos(self.angle) * self.width],
+                                                 [self.x + math.cos(self.angle) * self.lenght, self.y + math.sin(self.angle) * self.lenght],
+                                                  [self.x + math.cos(self.angle) * self.lenght + self.width * math.sin(self.angle),
+                                                   self.y + math.sin(self.angle) * self.lenght - math.cos(self.angle) * self.width]])
 
     def power_up(self):
         if self.f2_on == 1:
@@ -147,6 +150,9 @@ class Target:
     def draw(self):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
 
+    def new_target(self):
+        """Удаляет старую мишень, создаёт новую"""
+
 
 class Game:
     def __init__(self):
@@ -155,12 +161,28 @@ class Game:
         self.gun = Gun()
         self.target = Target()
 
+    def draw_score(score):
+        """
+        Пишет в левом верхнем углу экрана счёт игрока
+        :param score: Score
+        :type score: float
+        :return: None
+        :rtype: None
+        """
+        textsurface = myfont.render('Your Score: ' + str(score), False,
+                                    BLACK)  # Поверхность с отображением кол-ва очков
+        screen.blit(textsurface, (20, 20))
+
     def mainloop(self):
         clock = pygame.time.Clock()
         finished = False
 
         while not finished:
             screen.fill(WHITE)
+            textsurface = myfont.render('Your Score: ' + str(self.target.points), False,
+                                        BLACK)  # Поверхность с отображением кол-ва очков
+            screen.blit(textsurface, (20, 20))
+
             self.gun.draw()
             self.target.draw()
             for b in self.balls:
@@ -182,7 +204,7 @@ class Game:
 
             for b in self.balls:
                 b.move()
-                if b.hittest(self.target) and self.target.live:
+                if b.hit_test(self.target) and self.target.live == 1:
                     self.target.live = 0
                     self.target.hit()
                     self.target.new_target()
@@ -192,9 +214,12 @@ class Game:
 
 
 def main():
-    global screen
+    global screen, myfont
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.font.init()
+    myfont = pygame.font.SysFont('Comic Sans MS', 30)
+
     game = Game()
     game.mainloop()
 
