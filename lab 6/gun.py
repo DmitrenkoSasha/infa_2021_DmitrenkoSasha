@@ -80,6 +80,8 @@ class Gun:
         self.f2_on = 0
         self.angle = 1
         self.color = GREY
+        self.lenght = 80
+        self.width = 10
 
     def fire2_start(self):
         self.f2_on = 1
@@ -111,8 +113,13 @@ class Gun:
 
     def draw(self):
         # FIXME don't know how to do it
-        pygame.draw.rect(screen, self.color, [40, 450, 80, 10])
-        pass
+        pygame.draw.polygon(screen, self.color, [[40, 450], [40 + self.width * math.sin(self.angle), 450 + math.cos(self.angle) * self.width],
+                                                 [40 + math.cos(self.angle) * self.lenght, 450 + math.sin(self.angle) * self.lenght],
+                                                  [40 + math.cos(self.angle) * self.lenght + self.width * math.sin(self.angle),
+                                                   450 + math.sin(self.angle) * self.lenght - math.cos(self.angle) * self.width]])
+
+
+
 
     def power_up(self):
         if self.f2_on == 1:
