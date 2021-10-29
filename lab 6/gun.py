@@ -50,8 +50,10 @@ class Ball:
             self.vx = -self.vx
         self.y -= self.vy
         self.vy -= 9.8 * d_t
-        if self.y <= self.r or self.y >= 600-self.r:
+        if  self.y >= 600-self.r:
             self.vy = -0.6*self.vy
+        if self.y <= self.r:
+            self.vy = -self.vy
         if self.vy > 0 and self.vy * d_t < 9.8 * d_t**2/2 and self.y >= 600 - self.r:
             self.vx = 0
             self.vy = 0
@@ -144,14 +146,40 @@ class Target:
         self.x = randint(600, 780)
         self.y = randint(300, 550)
         self.r = randint(20, 50)
-        self.color = RED
+        self.vx = randint(10, 20)
+        self.vy = randint(10, 20)
+        self.color1 = RED
+        self.color2 = BLACK
+        self.color3 = YELLOW
+
+    def move(self):
+        """Переместить мяч по прошествии единицы времени.
+
+        Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
+        self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
+        и стен по краям окна (размер окна 800х600).
+
+        
+        """
+        self.x += self.vx
+        if self.x >= 800 or self.x <= 400:
+            self.vx = -self.vx
+        self.y -= self.vy
+        if self.y <= self.r or self.y >= 600-self.r:
+            self.vy = -self.vy
 
     def hit(self, points=1):
         """Попадание шарика в цель."""
         self.points += points
 
     def draw(self):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
+        #for i in range(3):
+        pygame.draw.circle(screen, self.color1, (self.x, self.y), self.r)
+        pygame.draw.circle(screen, self.color2, (self.x, self.y), self.r * 4 / 5)
+        pygame.draw.circle(screen, self.color1, (self.x, self.y), self.r * 3 / 5)
+        pygame.draw.circle(screen, self.color2, (self.x, self.y), self.r * 2 / 5)
+        pygame.draw.circle(screen, self.color3, (self.x, self.y), self.r * 1 / 5)
+
 
 
 class Game:
@@ -162,7 +190,7 @@ class Game:
         self.targets = []
         self.ochki = 0
 
-    def new_target(self, i):
+    def change_target(self, i):
         """Удаляет старую мишень, создаёт новую"""
         self.targets.pop(i)
         self.targets.append(Target())
@@ -193,14 +221,12 @@ class Game:
             screen.fill(WHITE)
 
             self.draw_score(self.ochki)
-
             self.gun.draw()
-
-            for i in range(len(self.targets)):  # FIXME Можно ли ввести переменную количества целей?
-                self.targets[i].draw()
 
             for b in self.balls:
                 b.draw()
+            for t in self.targets:
+                t.draw()
             pygame.display.update()
 
             clock.tick(FPS)
@@ -222,10 +248,13 @@ class Game:
                     if b.hit_test(self.targets[i]) and self.targets[i].live == 1:
                         self.targets[i].live = 0
                         self.targets[i].hit()
-                        self.new_target(i)
                         self.ochki += self.targets[i].points
+                        self.change_target(i)
 
-            self.gun.power_up()
+            for t in self.targets:
+                t.move()
+
+            self.gun.power_up()  # Нужно, чтобы пушка окрасилась в серый
 
         pygame.quit()
 
