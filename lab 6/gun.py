@@ -50,7 +50,7 @@ class Ball:
             self.vx = -self.vx
         self.y -= self.vy
         self.vy -= 9.8 * d_t
-        if self.y <= 0 or self.y >= 600:
+        if self.y <= self.r or self.y >= 600-self.r:
             self.vy = -0.6*self.vy
         if self.vy > 0 and self.vy * d_t < 9.8 * d_t**2/2 and self.y >= 600 - self.r:
             self.vx = 0
@@ -162,9 +162,11 @@ class Game:
         self.targets = []
         self.ochki = 0
 
-    def new_target(self):
+    def new_target(self, i):
         """Удаляет старую мишень, создаёт новую"""
-        return Target()
+        self.targets.pop(i)
+        self.targets.append(Target())
+
 
     def draw_score(self, score):
         """
@@ -186,18 +188,15 @@ class Game:
 
             if len(self.targets) < 2:
                 for i in range(2):
-                    self.targets.append(self.new_target())
+                    self.targets.append(Target())
 
             screen.fill(WHITE)
-
-            for i in range(len(self.targets)):
-                self.ochki += self.targets[i].points
 
             self.draw_score(self.ochki)
 
             self.gun.draw()
 
-            for i in range(len(self.targets)):
+            for i in range(len(self.targets)):  # FIXME Можно ли ввести переменную количества целей?
                 self.targets[i].draw()
 
             for b in self.balls:
@@ -223,7 +222,8 @@ class Game:
                     if b.hit_test(self.targets[i]) and self.targets[i].live == 1:
                         self.targets[i].live = 0
                         self.targets[i].hit()
-                        Target()
+                        self.new_target(i)
+                        self.ochki += self.targets[i].points
 
             self.gun.power_up()
 
