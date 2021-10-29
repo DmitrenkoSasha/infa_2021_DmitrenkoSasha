@@ -75,10 +75,7 @@ class Ball:
         Returns:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
-        if (self.x - obj.x)**2 + (self.y - obj.y)**2 <= obj.r**2:
-            return True
-        else:
-            return False
+        return ((self.x - obj.x)**2 + (self.y - obj.y)**2 <= (obj.r+self.r)**2)
 
 
 
@@ -176,7 +173,7 @@ class Game:
         target = Target()
         return target
 
-    def draw_score(score):
+    def draw_score(self, score):
         """
         Пишет в левом верхнем углу экрана счёт игрока
         :param score: Score
@@ -195,18 +192,22 @@ class Game:
         while not finished:
 
 
-            if self.targets == []:
+            if len(self.targets) < 2:
                 for i in range(2):
                     self.targets.append(self.new_target())
                     print(self.targets)
             screen.fill(WHITE)
 
+
+
             for i in range(len(self.targets)):
                 self.ochki += self.targets[i].points
 
-            textsurface = myfont.render('Your Score: ' + str(self.ochki), False,
-                                        BLACK)  # Поверхность с отображением кол-ва очков
-            screen.blit(textsurface, (20, 20))
+
+            #textsurface = myfont.render('Your Score: ' + str(self.ochki), False,
+                                        #BLACK)  # Поверхность с отображением кол-ва очков
+            #screen.blit(textsurface, (20, 20))
+            self.draw_score(self.ochki)
 
             self.gun.draw()
 
@@ -232,10 +233,13 @@ class Game:
 
             for b in self.balls:
                 b.move(1/FPS)
-                if b.hit_test(self.target) and self.target.live == 1:
-                    self.target.live = 0
-                    self.target.hit()
-                    self.new_target()
+                for i in range(len(self.targets)):
+                    if b.hit_test(self.targets[i]) and self.targets[i].live == 1:
+                        self.targets[i].live = 0
+                        self.targets[i].hit()
+                        self.new_target()
+
+
             self.gun.power_up()
 
         pygame.quit()
