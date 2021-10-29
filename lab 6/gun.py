@@ -1,7 +1,7 @@
+import pygame
 import math
 from random import choice, randint
 
-import pygame
 
 FPS = 30
 
@@ -42,6 +42,7 @@ class Ball:
         Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
         self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
         и стен по краям окна (размер окна 800х600).
+
         d_t: время, прошедшее между двумя тиками экрана.
         """
         self.x += self.vx
@@ -55,17 +56,12 @@ class Ball:
             self.vx = 0
             self.vy = 0
 
-
-
-
-
     def draw(self):
         pygame.draw.circle(
             screen,
             self.color,
             (self.x, self.y),
             self.r)
-
 
     def hit_test(self, obj):
         """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
@@ -75,8 +71,7 @@ class Ball:
         Returns:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
-        return ((self.x - obj.x)**2 + (self.y - obj.y)**2 <= (obj.r+self.r)**2)
-
+        return (self.x - obj.x)**2 + (self.y - obj.y)**2 <= (obj.r+self.r)**2
 
 
 class Gun:
@@ -111,23 +106,26 @@ class Gun:
 
     def targetting(self, event):
         """Прицеливание. Зависит от положения мыши."""
-        if event:
+        try:
             self.angle = math.atan((event.pos[1] - 450) / (event.pos[0] - 20))
-        elif self.f2_on:
+        except ZeroDivisionError:
+            print("Деление на ноль")
+        if self.f2_on:
             self.color = RED
         else:
             self.color = GREY
 
     def draw(self):
         """Рисует пушку. Ствол смотрит на точку, куда наведён курсор."""
-        pygame.draw.polygon(screen, self.color, [[self.x, self.y], [self.x + self.width * math.sin(self.angle), self.y - math.cos(self.angle) * self.width],
-                                                 [self.x + math.cos(self.angle) * self.lenght + self.width * math.sin(self.angle),
-                                                  self.y + math.sin(self.angle) * self.lenght - math.cos(self.angle) * self.width],
-                                                [self.x + math.cos(self.angle) * self.lenght,self.y + math.sin(self.angle) * self.lenght]])
-
-
-
-
+        pygame.draw.polygon(screen, self.color, [[self.x, self.y], [self.x + self.width * math.sin(self.angle),
+                                                                    self.y - math.cos(self.angle) * self.width],
+                                                 [self.x + math.cos(self.angle) * self.lenght + self.width * math.sin(
+                                                     self.angle),
+                                                  self.y + math.sin(self.angle) * self.lenght - math.cos(
+                                                      self.angle) * self.width],
+                                                 [self.x + math.cos(self.angle) * self.lenght,
+                                                  self.y + math.sin(self.angle) * self.lenght]])
+        #pygame.image.load("C:\Users\пк\Pictures\Фото на студенческий.JPG")
 
     def power_up(self):
         if self.f2_on == 1:
@@ -156,9 +154,6 @@ class Target:
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
 
 
-
-
-
 class Game:
     def __init__(self):
         self.balls = []
@@ -167,11 +162,9 @@ class Game:
         self.targets = []
         self.ochki = 0
 
-
     def new_target(self):
         """Удаляет старую мишень, создаёт новую"""
-        target = Target()
-        return target
+        return Target()
 
     def draw_score(self, score):
         """
@@ -191,22 +184,15 @@ class Game:
 
         while not finished:
 
-
             if len(self.targets) < 2:
                 for i in range(2):
                     self.targets.append(self.new_target())
-                    print(self.targets)
+
             screen.fill(WHITE)
-
-
 
             for i in range(len(self.targets)):
                 self.ochki += self.targets[i].points
 
-
-            #textsurface = myfont.render('Your Score: ' + str(self.ochki), False,
-                                        #BLACK)  # Поверхность с отображением кол-ва очков
-            #screen.blit(textsurface, (20, 20))
             self.draw_score(self.ochki)
 
             self.gun.draw()
@@ -237,8 +223,7 @@ class Game:
                     if b.hit_test(self.targets[i]) and self.targets[i].live == 1:
                         self.targets[i].live = 0
                         self.targets[i].hit()
-                        self.new_target()
-
+                        Target()
 
             self.gun.power_up()
 
@@ -247,8 +232,7 @@ class Game:
 
 def main():
 
-    global screen, myfont, targets
-    targets = []
+    global screen, myfont
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.font.init()
