@@ -3,8 +3,6 @@ import math
 from random import choice, randint
 
 
-FPS = 30
-
 RED = 0xFF0000
 BLUE = 0x0000FF
 YELLOW = 0xFFC91F
@@ -156,10 +154,8 @@ class Target:
         """Переместить мяч по прошествии единицы времени.
 
         Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
-        self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
-        и стен по краям окна (размер окна 800х600).
-
-        
+        self.x и self.y с учетом скоростей self.vx и self.vy
+        и стен по краям невидимого окна (размер невидимого окна 400х600).
         """
         self.x += self.vx
         if self.x >= 800 or self.x <= 400:
@@ -173,7 +169,7 @@ class Target:
         self.points += points
 
     def draw(self):
-        #for i in range(3):
+        """Просто рисуем несколько кругов друг на друге - это наша мишень"""
         pygame.draw.circle(screen, self.color1, (self.x, self.y), self.r)
         pygame.draw.circle(screen, self.color2, (self.x, self.y), self.r * 4 / 5)
         pygame.draw.circle(screen, self.color1, (self.x, self.y), self.r * 3 / 5)
@@ -183,16 +179,18 @@ class Target:
 
 
 class Game:
+    """Отвечает за события с пушкой, мячиками и мишенями на экране"""
     def __init__(self):
         self.balls = []
         self.bullets = 0
         self.gun = Gun()
         self.targets = []
         self.ochki = 0
+        self.FPS = 30
 
-    def change_target(self, i):
+    def change_target(self, t):
         """Удаляет старую мишень, создаёт новую"""
-        self.targets.pop(i)
+        self.targets.remove(t)
         self.targets.append(Target())
 
 
@@ -225,11 +223,11 @@ class Game:
 
             for b in self.balls:
                 b.draw()
-            for t in self.targets:
-                t.draw()
+            for target in self.targets:
+                target.draw()
             pygame.display.update()
 
-            clock.tick(FPS)
+            clock.tick(self.FPS)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finished = True
@@ -237,22 +235,22 @@ class Game:
                     self.gun.fire2_start()
                 elif event.type == pygame.MOUSEBUTTONUP:
                     new_ball = self.gun.fire2_end(event)  # Новый шарик вылетает из пушки после отпускания кнопки мыши
-                    self.bullets += 1
+                    self.bullets += 1  # FIXME Зачем эти пули?
                     self.balls.append(new_ball)  # Новый шарик записан в список
                 elif event.type == pygame.MOUSEMOTION:
                     self.gun.targetting(event)  # Пушка поворачивается за мышью
 
             for b in self.balls:
-                b.move(1/FPS)
-                for i in range(len(self.targets)):
-                    if b.hit_test(self.targets[i]) and self.targets[i].live == 1:
-                        self.targets[i].live = 0
-                        self.targets[i].hit()
-                        self.ochki += self.targets[i].points
-                        self.change_target(i)
+                b.move(1/self.FPS)
+                for target in self.targets:
+                    if b.hit_test(target) and target.live == 1:
+                        target.live = 0
+                        target.hit()
+                        self.ochki += target.points
+                        self.change_target(target)
 
-            for t in self.targets:
-                t.move()
+            for target in self.targets:
+                target.move()
 
             self.gun.power_up()  # Нужно, чтобы пушка окрасилась в серый
 
