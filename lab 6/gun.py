@@ -6,13 +6,14 @@ from random import choice, randint
 RED = 0xFF0000
 BLUE = 0x0000FF
 YELLOW = 0xFFC91F
+LIMEGREEN = (50, 205, 50)
 GREEN = 0x00FF00
 MAGENTA = 0xFF03B8
 CYAN = 0x00FFCC
 BLACK = (0, 0, 0)
 WHITE = 0xFFFFFF
 GREY = 0x7D7D7D
-GAME_COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
+GAME_COLORS = [RED, BLUE, YELLOW, LIMEGREEN, GREEN, MAGENTA, CYAN]
 
 WIDTH = 800
 HEIGHT = 600
@@ -79,10 +80,11 @@ class Gun:
         self.f2_power = 10
         self.f2_on = 0
         self.angle = 1
-        self.color = GREY
+        self.color1 = GREY
+        self.color2 = LIMEGREEN
         self.lenght = 40
         self.width = 10
-        self.x = 40
+        self.x = 60
         self.y = 450
 
     def fire2_start(self):
@@ -111,13 +113,19 @@ class Gun:
         except ZeroDivisionError:
             print("Деление на ноль")
         if self.f2_on:
-            self.color = RED
+            self.color1 = RED
+            self.color2 = RED
         else:
-            self.color = GREY
+            self.color1 = GREY
+            self.color2 = LIMEGREEN
+
 
     def draw(self):
         """Рисует пушку. Ствол смотрит на точку, куда наведён курсор."""
-        pygame.draw.polygon(screen, self.color, [[self.x, self.y], [self.x + self.width * math.sin(self.angle),
+        pygame.draw.rect(screen, self.color2, (self.x - 60, self.y + 20, 120, 50))
+        pygame.draw.rect(screen, self.color2, (self.x - 30, self.y, 60, 20))
+        pygame.draw.circle(screen, self.color2, [self.x,  self.y], 5)
+        pygame.draw.polygon(screen, self.color1, [[self.x, self.y], [self.x + self.width * math.sin(self.angle),
                                                                     self.y - math.cos(self.angle) * self.width],
                                                  [self.x + math.cos(self.angle) * self.lenght + self.width * math.sin(
                                                      self.angle),
