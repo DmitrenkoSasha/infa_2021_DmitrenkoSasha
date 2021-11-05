@@ -1,5 +1,6 @@
 import pygame
 import math
+import sys, os
 from random import choice, randint
 
 
@@ -98,6 +99,7 @@ class Gun:
         self.width = 10
         self.x = 60
         self.y = 450
+        self.vx = 1
 
     def fire2_start(self):
         self.f2_on = 1
@@ -145,7 +147,10 @@ class Gun:
                                                       self.angle) * self.width],
                                                  [self.x + math.cos(self.angle) * self.lenght,
                                                   self.y + math.sin(self.angle) * self.lenght]])
-        #pygame.image.load("C:\Users\пк\Pictures\Фото на студенческий.JPG")
+        '''dog_surf = pygame.image.load("bomb.jpg")
+        dog_rect = dog_surf.get_rect(bottomright=(100, 100))
+
+        screen.blit(dog_surf, dog_rect)'''
 
     def power_up(self):
         if self.f2_on == 1:
@@ -154,6 +159,12 @@ class Gun:
             self.color = RED
         else:
             self.color = GREY
+
+    def move(self, event):
+        if event.key == pygame.K_LEFT:
+            self.x -= self.vx
+        elif event.key == pygame.K_RIGHT:
+            self.x += self.vx
 
 
 class Target:
@@ -171,9 +182,7 @@ class Target:
         self.color3 = YELLOW
 
 
-    def hit(self, points=1):
-        """Попадание в цель."""
-        self.points += points
+
 
     def move(self):
         pass
@@ -186,7 +195,9 @@ class Ball_target(Target):
         """ Инициализация нового многоугольника """
         super(Ball_target, self).__init__()
 
-
+    def hit(self, points=2):
+        """Попадание в цель."""
+        self.points += points
 
 
     def move(self):
@@ -219,6 +230,10 @@ class Poly_target(Target):
         self.amount_vertex = randint(3, 7)
         self.live_time_poly = 3 # Время отображения одного многоугольника в секундах
 
+    def hit(self, points=1):
+        """Попадание в цель."""
+        self.points += points
+
     def draw(self):
         """
         Рисует один правильный многоугольник.
@@ -237,17 +252,18 @@ class Poly_target(Target):
 class Game:
     """Отвечает за события с пушкой, мячиками и мишенями на экране"""
     def __init__(self):
-        self.balls = []
+        self.balls = []  # Список шариков-снарядов
         self.bullets = 0
         self.gun = Gun()
         self.targets = []
-        self.polys = []  # мишени-многоугольники
+        #self.polys = []  # мишени-многоугольники
         self.ochki = 0
         self.FPS = 30
         self.amount_poly = 2
         self.amount_balls = 2
 
     def first_targets(self):
+        ''' прорисовка первых целей'''
         for i in range(self.amount_poly):
             self.targets.append(Poly_target())
         for i in range(self.amount_balls):
@@ -272,7 +288,8 @@ class Game:
         """Заменяет мишень-многоугольник"""
         poly.poly_cut_livetime(1/self.FPS)
         if poly.live_time_poly <= 0:
-            self.polys.remove(poly)
+            self.targets.remove(poly)
+            self.targets.append(Poly_target())
 
 
     def repit_actions(self):
@@ -302,6 +319,8 @@ class Game:
                                     BLACK)  # Поверхность с отображением кол-ва очков
         screen.blit(textsurface, (20, 20))
 
+
+
     def mainloop(self):
         finished = False
 
@@ -324,6 +343,8 @@ class Game:
                     self.balls.append(new_ball)  # Новый шарик записан в список
                 elif event.type == pygame.MOUSEMOTION:
                     self.gun.targetting(event)  # Пушка поворачивается за мышью
+                elif event.type == pygame.KEYDOWN:
+                    self.gun.move(event)  # Пушка движется
 
             for b in self.balls:
                 b.move(1/self.FPS)
@@ -338,8 +359,12 @@ class Game:
 
             for target in self.targets:
                 target.move()
+                if type(target) is Poly_target:
+                    self.change_poly(target)
 
             self.gun.power_up()  # Нужно, чтобы пушка окрасилась в серый
+
+
 
         pygame.quit()
 
