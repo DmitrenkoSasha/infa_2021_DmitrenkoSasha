@@ -99,7 +99,10 @@ class Gun:
         self.width = 10
         self.x = 60
         self.y = 450
-        self.vx = 1
+        self.vx = 3
+        self.vy = 3
+        self.motion_x = 'STOP'
+        self.motion_y = 'STOP'
 
     def fire2_start(self):
         self.f2_on = 1
@@ -160,11 +163,26 @@ class Gun:
         else:
             self.color = GREY
 
-    def move(self, event):
-        if event.key == pygame.K_LEFT:
+    def move(self):
+        """Движение пушки с залипанием клавиш"""git 
+        if self.motion_x == 'LEFT':
             self.x -= self.vx
-        elif event.key == pygame.K_RIGHT:
+            if self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
+                self.y -= self.vy
+            elif self.motion_y == 'DOWN':
+                self.y += self.vy
+        elif self.motion_x == 'RIGHT':
             self.x += self.vx
+            if self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
+                self.y -= self.vy
+            elif self.motion_y == 'DOWN':
+                self.y += self.vy
+        elif self.motion_y == 'DOWN':
+            self.y += self.vy
+        elif self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
+            self.y -= self.vy
+
+
 
 
 class Target:
@@ -293,6 +311,9 @@ class Game:
 
 
     def repit_actions(self):
+        """Включает в себя общие строчки кода, которые должны быть прописаны
+        как до главного цикла, чтобы отобразить первые фигуры, так и в нём самом.
+        Экономия места"""
         screen.fill(WHITE)
 
         self.draw_score(self.ochki)
@@ -344,7 +365,23 @@ class Game:
                 elif event.type == pygame.MOUSEMOTION:
                     self.gun.targetting(event)  # Пушка поворачивается за мышью
                 elif event.type == pygame.KEYDOWN:
-                    self.gun.move(event)  # Пушка движется
+                    if event.key == pygame.K_UP:
+                        self.gun.motion_y = 'UP'
+                    elif event.key == pygame.K_DOWN:
+                        self.gun.motion_y = 'DOWN'
+                    elif event.key == pygame.K_LEFT:
+                        self.gun.motion_x = 'LEFT'
+                    elif event.key == pygame.K_RIGHT:
+                        self.gun.motion_x = 'RIGHT'
+                    #self.gun.move(event)  # Пушка движется
+                elif event.type == pygame.KEYUP:
+                    if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                        self.gun.motion_x = 'STOP'
+                    elif event.key in [pygame.K_UP, pygame.K_DOWN]:
+                        self.gun.motion_y = 'STOP'
+                        #self.gun.move(event)
+
+            self.gun.move()
 
             for b in self.balls:
                 b.move(1/self.FPS)
