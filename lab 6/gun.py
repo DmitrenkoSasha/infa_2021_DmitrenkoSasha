@@ -188,6 +188,7 @@ class Ball_target(Target):
 
 
 
+
     def move(self):
         """Переместить мяч по прошествии единицы времени.
 
@@ -213,9 +214,9 @@ class Ball_target(Target):
 
 class Poly_target(Target):
     def __init__(self):
-        """ Инициализация нового многоугольника """
+        """ Инициализация нового многоугольника-мишени """
         super(Poly_target, self).__init__()
-        self.amount_vertex = 1
+        self.amount_vertex = randint(3, 7)
         self.live_time_poly = 3 # Время отображения одного многоугольника в секундах
 
     def draw(self):
@@ -243,11 +244,23 @@ class Game:
         self.polys = []  # мишени-многоугольники
         self.ochki = 0
         self.FPS = 30
+        self.amount_poly = 2
+        self.amount_balls = 2
+
+    def first_targets(self):
+        for i in range(self.amount_poly):
+            self.targets.append(Poly_target())
+        for i in range(self.amount_balls):
+            self.targets.append(Ball_target())
 
     def change_target(self, t):
         """Удаляет старую мишень, создаёт новую"""
         self.targets.remove(t)
-        self.targets.append(Target())
+        if type(t) is Ball_target:
+            self.targets.append(Ball_target())
+        elif type(t) is Poly_target:
+            self.targets.append(Poly_target())
+
 
     def remove_ball(self, ball):
         """Удаляет мячик"""
@@ -262,7 +275,19 @@ class Game:
             self.polys.remove(poly)
 
 
+    def repit_actions(self):
+        screen.fill(WHITE)
 
+        self.draw_score(self.ochki)
+        self.gun.draw()
+
+        for b in self.balls:
+            b.draw()
+        for target in self.targets:
+            target.draw()
+        pygame.display.update()
+
+        clock.tick(self.FPS)
 
 
     def draw_score(self, score):
@@ -278,29 +303,16 @@ class Game:
         screen.blit(textsurface, (20, 20))
 
     def mainloop(self):
-        clock = pygame.time.Clock()
         finished = False
 
+        self.first_targets()
+        self.repit_actions()
+
+
         while not finished:
-
-            if len(self.targets) < 2:
-                for i in range(2):
-                    self.targets.append(Ball_target())
-
-            screen.fill(WHITE)
-
-            self.draw_score(self.ochki)
-            self.gun.draw()
+            self.repit_actions()
 
 
-
-            for b in self.balls:
-                b.draw()
-            for target in self.targets:
-                target.draw()
-            pygame.display.update()
-
-            clock.tick(self.FPS)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finished = True
@@ -334,8 +346,9 @@ class Game:
 
 def main():
 
-    global screen, myfont
+    global screen, myfont, clock
     pygame.init()
+    clock = pygame.time.Clock()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.font.init()
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
