@@ -1,6 +1,6 @@
 import pygame
 import math
- #  import sys, os
+# import sys, os
 from random import choice, randint
 
 
@@ -19,8 +19,9 @@ GAME_COLORS = [RED, BLUE, YELLOW, LIMEGREEN, GREEN, MAGENTA, CYAN]
 WIDTH = 800
 HEIGHT = 600
 
+
 class Gun:
-    def __init__(self, x = 60, y = 450):
+    def __init__(self, x=60, y=450):
         self.f2_power = 10
         self.f2_on = 0
         self.angle = 1
@@ -67,19 +68,18 @@ class Gun:
             self.color1 = GREY
             self.color2 = LIMEGREEN
 
-
     def draw(self):
         """Рисует пушку. Ствол смотрит на точку, куда наведён курсор."""
         pygame.draw.rect(screen, self.color2, (self.x - 60, self.y + 20, 120, 50))
         pygame.draw.rect(screen, self.color2, (self.x - 30, self.y, 60, 20))
         pygame.draw.circle(screen, self.color2, [self.x,  self.y], 5)
         pygame.draw.polygon(screen, self.color1, [[self.x, self.y], [self.x + self.width * math.sin(self.angle),
-                                                                    self.y - math.cos(self.angle) * self.width],
-                                                 [self.x + math.cos(self.angle) * self.lenght + self.width * math.sin(
+                                                                     self.y - math.cos(self.angle) * self.width],
+                                                  [self.x + math.cos(self.angle) * self.lenght + self.width * math.sin(
                                                      self.angle),
                                                   self.y + math.sin(self.angle) * self.lenght - math.cos(
                                                       self.angle) * self.width],
-                                                 [self.x + math.cos(self.angle) * self.lenght,
+                                                  [self.x + math.cos(self.angle) * self.lenght,
                                                   self.y + math.sin(self.angle) * self.lenght]])
         '''dog_surf = pygame.image.load("bomb.jpg")
         dog_rect = dog_surf.get_rect(bottomright=(100, 100))
@@ -112,6 +112,7 @@ class Gun:
             self.y += self.vy
         elif self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
             self.y -= self.vy
+
 
 class Ball(Gun):
     def __init__(self, x, y):
@@ -161,7 +162,8 @@ class Ball(Gun):
             self.y = 600 - self.r
 
     def cut_livetime(self, d_t):
-            self.livetime -= d_t
+        """Уменьшает оставшееся время отображения на экране"""
+        self.livetime -= d_t
 
     def draw(self):
         pygame.draw.circle(
@@ -195,14 +197,12 @@ class Target:
         self.color2 = BLACK
         self.color3 = YELLOW
 
-
-
-
     def move(self):
         pass
 
     def draw(self):
         pass
+
 
 class Ball_target(Target):
     def __init__(self):
@@ -212,7 +212,6 @@ class Ball_target(Target):
     def hit(self, points=2):
         """Попадание в цель."""
         self.points += points
-
 
     def move(self):
         """Переместить мяч по прошествии единицы времени.
@@ -242,7 +241,7 @@ class Poly_target(Target):
         """ Инициализация нового многоугольника-мишени """
         super(Poly_target, self).__init__()
         self.amount_vertex = randint(3, 7)
-        self.live_time_poly = 3 # Время отображения одного многоугольника в секундах
+        self.live_time_poly = 3  # Время отображения одного многоугольника в секундах
 
     def hit(self, points=1):
         """Попадание в цель."""
@@ -259,9 +258,23 @@ class Poly_target(Target):
             for i in range(n)
         ])
 
-
     def poly_cut_livetime(self, d_t):
-            self.live_time_poly -= d_t
+        self.live_time_poly -= d_t
+
+
+class Mina:
+    def __init__(self):
+        self.x = randint(0, WIDTH)
+        self.y = randint(0, HEIGHT)
+        self.size = randint(10, 15)
+        self.amount = 2
+
+    def draw(self):
+        pass
+
+    def check(self):
+        pass
+
 
 class Game:
     """Отвечает за события с пушкой, мячиками и мишенями на экране"""
@@ -270,14 +283,13 @@ class Game:
         self.bullets = 0
         self.gun = Gun()
         self.targets = []
-        #self.polys = []  # мишени-многоугольники
         self.ochki = 0
         self.FPS = 30
         self.amount_poly = 2
         self.amount_balls = 2
 
     def first_targets(self):
-        ''' прорисовка первых целей'''
+        """ прорисовка первых целей"""
         for i in range(self.amount_poly):
             self.targets.append(Poly_target())
         for i in range(self.amount_balls):
@@ -291,7 +303,6 @@ class Game:
         elif type(t) is Poly_target:
             self.targets.append(Poly_target())
 
-
     def remove_ball(self, ball):
         """Удаляет мячик"""
         ball.cut_livetime(1/self.FPS)
@@ -304,7 +315,6 @@ class Game:
         if poly.live_time_poly <= 0:
             self.targets.remove(poly)
             self.targets.append(Poly_target())
-
 
     def repit_actions(self):
         """Включает в себя общие строчки кода, которые должны быть прописаны
