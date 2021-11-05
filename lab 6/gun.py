@@ -1,6 +1,6 @@
 import pygame
 import math
-import sys, os
+ #  import sys, os
 from random import choice, randint
 
 
@@ -19,9 +19,102 @@ GAME_COLORS = [RED, BLUE, YELLOW, LIMEGREEN, GREEN, MAGENTA, CYAN]
 WIDTH = 800
 HEIGHT = 600
 
+class Gun:
+    def __init__(self, x = 60, y = 450):
+        self.f2_power = 10
+        self.f2_on = 0
+        self.angle = 1
+        self.color1 = GREY
+        self.color2 = LIMEGREEN
+        self.lenght = 80
+        self.width = 10
+        self.x = x
+        self.y = y
+        self.vx = 3
+        self.vy = 3
+        self.motion_x = 'STOP'
+        self.motion_y = 'STOP'
 
-class Ball:
-    def __init__(self, x=40, y=450):
+    def fire2_start(self):
+        self.f2_on = 1
+
+    def fire2_end(self, event):
+        """Выстрел мячом.
+
+        Происходит при отпускании кнопки мыши.
+        Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
+        """
+        new_ball = Ball(self.x, self.y)
+        new_ball.r += 5
+        self.angle = math.atan2((event.pos[1] - new_ball.y), (event.pos[0] - new_ball.x))
+        new_ball.vx = self.f2_power * math.cos(self.angle)
+        new_ball.vy = - self.f2_power * math.sin(self.angle)
+        self.f2_on = 0
+        self.f2_power = 10
+
+        return new_ball
+
+    def targetting(self, event):
+        """Прицеливание. Зависит от положения мыши."""
+        try:
+            self.angle = math.atan((event.pos[1] - self.y) / (event.pos[0] - self.x))
+        except ZeroDivisionError:
+            print("Деление на ноль")
+        if self.f2_on:
+            self.color1 = RED
+            self.color2 = RED
+        else:
+            self.color1 = GREY
+            self.color2 = LIMEGREEN
+
+
+    def draw(self):
+        """Рисует пушку. Ствол смотрит на точку, куда наведён курсор."""
+        pygame.draw.rect(screen, self.color2, (self.x - 60, self.y + 20, 120, 50))
+        pygame.draw.rect(screen, self.color2, (self.x - 30, self.y, 60, 20))
+        pygame.draw.circle(screen, self.color2, [self.x,  self.y], 5)
+        pygame.draw.polygon(screen, self.color1, [[self.x, self.y], [self.x + self.width * math.sin(self.angle),
+                                                                    self.y - math.cos(self.angle) * self.width],
+                                                 [self.x + math.cos(self.angle) * self.lenght + self.width * math.sin(
+                                                     self.angle),
+                                                  self.y + math.sin(self.angle) * self.lenght - math.cos(
+                                                      self.angle) * self.width],
+                                                 [self.x + math.cos(self.angle) * self.lenght,
+                                                  self.y + math.sin(self.angle) * self.lenght]])
+        '''dog_surf = pygame.image.load("bomb.jpg")
+        dog_rect = dog_surf.get_rect(bottomright=(100, 100))
+
+        screen.blit(dog_surf, dog_rect)'''
+
+    def power_up(self):
+        if self.f2_on == 1:
+            if self.f2_power < 100:
+                self.f2_power += 1
+            self.color = RED
+        else:
+            self.color = GREY
+
+    def move_gun(self):
+        """Движение пушки с залипанием клавиш"""
+        if self.motion_x == 'LEFT':
+            self.x -= self.vx
+            if self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
+                self.y -= self.vy
+            elif self.motion_y == 'DOWN':
+                self.y += self.vy
+        elif self.motion_x == 'RIGHT':
+            self.x += self.vx
+            if self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
+                self.y -= self.vy
+            elif self.motion_y == 'DOWN':
+                self.y += self.vy
+        elif self.motion_y == 'DOWN':
+            self.y += self.vy
+        elif self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
+            self.y -= self.vy
+
+class Ball(Gun):
+    def __init__(self, x, y):
         """ Конструктор класса ball
 
         Args:
@@ -86,103 +179,6 @@ class Ball:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
         return (self.x - obj.x)**2 + (self.y - obj.y)**2 <= (obj.r+self.r)**2
-
-
-class Gun:
-    def __init__(self):
-        self.f2_power = 10
-        self.f2_on = 0
-        self.angle = 1
-        self.color1 = GREY
-        self.color2 = LIMEGREEN
-        self.lenght = 80
-        self.width = 10
-        self.x = 60
-        self.y = 450
-        self.vx = 3
-        self.vy = 3
-        self.motion_x = 'STOP'
-        self.motion_y = 'STOP'
-
-    def fire2_start(self):
-        self.f2_on = 1
-
-    def fire2_end(self, event):
-        """Выстрел мячом.
-
-        Происходит при отпускании кнопки мыши.
-        Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
-        """
-        new_ball = Ball()
-        new_ball.r += 5
-        self.angle = math.atan2((event.pos[1] - new_ball.y), (event.pos[0] - new_ball.x))
-        new_ball.vx = self.f2_power * math.cos(self.angle)
-        new_ball.vy = - self.f2_power * math.sin(self.angle)
-        self.f2_on = 0
-        self.f2_power = 10
-
-        return new_ball
-
-    def targetting(self, event):
-        """Прицеливание. Зависит от положения мыши."""
-        try:
-            self.angle = math.atan((event.pos[1] - 450) / (event.pos[0] - 20))
-        except ZeroDivisionError:
-            print("Деление на ноль")
-        if self.f2_on:
-            self.color1 = RED
-            self.color2 = RED
-        else:
-            self.color1 = GREY
-            self.color2 = LIMEGREEN
-
-
-    def draw(self):
-        """Рисует пушку. Ствол смотрит на точку, куда наведён курсор."""
-        pygame.draw.rect(screen, self.color2, (self.x - 60, self.y + 20, 120, 50))
-        pygame.draw.rect(screen, self.color2, (self.x - 30, self.y, 60, 20))
-        pygame.draw.circle(screen, self.color2, [self.x,  self.y], 5)
-        pygame.draw.polygon(screen, self.color1, [[self.x, self.y], [self.x + self.width * math.sin(self.angle),
-                                                                    self.y - math.cos(self.angle) * self.width],
-                                                 [self.x + math.cos(self.angle) * self.lenght + self.width * math.sin(
-                                                     self.angle),
-                                                  self.y + math.sin(self.angle) * self.lenght - math.cos(
-                                                      self.angle) * self.width],
-                                                 [self.x + math.cos(self.angle) * self.lenght,
-                                                  self.y + math.sin(self.angle) * self.lenght]])
-        '''dog_surf = pygame.image.load("bomb.jpg")
-        dog_rect = dog_surf.get_rect(bottomright=(100, 100))
-
-        screen.blit(dog_surf, dog_rect)'''
-
-    def power_up(self):
-        if self.f2_on == 1:
-            if self.f2_power < 100:
-                self.f2_power += 1
-            self.color = RED
-        else:
-            self.color = GREY
-
-    def move(self):
-        """Движение пушки с залипанием клавиш"""git 
-        if self.motion_x == 'LEFT':
-            self.x -= self.vx
-            if self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
-                self.y -= self.vy
-            elif self.motion_y == 'DOWN':
-                self.y += self.vy
-        elif self.motion_x == 'RIGHT':
-            self.x += self.vx
-            if self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
-                self.y -= self.vy
-            elif self.motion_y == 'DOWN':
-                self.y += self.vy
-        elif self.motion_y == 'DOWN':
-            self.y += self.vy
-        elif self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
-            self.y -= self.vy
-
-
 
 
 class Target:
@@ -381,7 +377,7 @@ class Game:
                         self.gun.motion_y = 'STOP'
                         #self.gun.move(event)
 
-            self.gun.move()
+            self.gun.move_gun()
 
             for b in self.balls:
                 b.move(1/self.FPS)
