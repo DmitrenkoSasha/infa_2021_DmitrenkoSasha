@@ -34,6 +34,7 @@ class Ball:
         self.vy = 0
         self.color = choice(GAME_COLORS)
         self.live = 30
+        self.livetime = 0.5
 
     def move(self, d_t):
         """Переместить мяч по прошествии единицы времени.
@@ -45,17 +46,28 @@ class Ball:
         d_t: время, прошедшее между двумя тиками экрана.
         """
         self.x += self.vx
-        if self.x >= 800 or self.x <= 0:
-            self.vx = -self.vx
         self.y -= self.vy
-        self.vy -= 9.8 * d_t
-        if  self.y >= 600-self.r:
-            self.vy = -0.6*self.vy
-        if self.y <= self.r:
-            self.vy = -self.vy
-        if self.vy > 0 and self.vy * d_t < 9.8 * d_t**2/2 and self.y >= 600 - self.r:
+
+        if self.y + self.r < 600:
+            self.vy -= 9.81*d_t
+        if self.x + self.r >= 800:
+            self.vx = -0.8*self.vx
+            self.x = 800 - self.r
+        if self.x - self.r <= 0:
+            self.vx = -0.8 * self.vx
+            self.x = self.r
+        if self.y + self.r >= 600:
+            self.vy = -0.8 * self.vy
+        if self.y + self.r <= 0:
+            self.y = self.r
+            self.vy = -0.8*self.vy
+        if self.vy < 9.81*d_t and self.y + self.r >= 600:
             self.vx = 0
             self.vy = 0
+            self.y = 600 - self.r
+
+    def cut_livetime(self, d_t):
+            self.livetime -= d_t
 
     def draw(self):
         pygame.draw.circle(
@@ -82,7 +94,7 @@ class Gun:
         self.angle = 1
         self.color1 = GREY
         self.color2 = LIMEGREEN
-        self.lenght = 40
+        self.lenght = 80
         self.width = 10
         self.x = 60
         self.y = 450
@@ -143,7 +155,8 @@ class Gun:
         else:
             self.color = GREY
 
-
+#class Ball_target(Target):
+#class Poly_target(Target):
 class Target:
     def __init__(self):
         """ Инициализация новой цели. """
@@ -201,6 +214,15 @@ class Game:
         self.targets.remove(t)
         self.targets.append(Target())
 
+    def remove_ball(self, ball):
+        """Удаляет мячик"""
+        ball.cut_livetime(1/self.FPS)
+        if ball.livetime <=0 :
+            self.balls.remove(ball)
+
+
+
+
 
     def draw_score(self, score):
         """
@@ -250,6 +272,8 @@ class Game:
 
             for b in self.balls:
                 b.move(1/self.FPS)
+                if b.vx == 0 and b.vy == 0:
+                    self.remove_ball(b)
                 for target in self.targets:
                     if b.hit_test(target) and target.live == 1:
                         target.live = 0
