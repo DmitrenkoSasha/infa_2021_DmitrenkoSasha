@@ -155,8 +155,7 @@ class Gun:
         else:
             self.color = GREY
 
-#class Ball_target(Target):
-#class Poly_target(Target):
+
 class Target:
     def __init__(self):
         """ Инициализация новой цели. """
@@ -171,6 +170,24 @@ class Target:
         self.color2 = BLACK
         self.color3 = YELLOW
 
+
+    def hit(self, points=1):
+        """Попадание в цель."""
+        self.points += points
+
+    def move(self):
+        pass
+
+    def draw(self):
+        pass
+
+class Ball_target(Target):
+    def __init__(self):
+        """ Инициализация нового многоугольника """
+        super(Ball_target, self).__init__()
+
+
+
     def move(self):
         """Переместить мяч по прошествии единицы времени.
 
@@ -182,12 +199,8 @@ class Target:
         if self.x >= 800 or self.x <= 400:
             self.vx = -self.vx
         self.y -= self.vy
-        if self.y <= self.r or self.y >= 600-self.r:
+        if self.y <= self.r or self.y >= 600 - self.r:
             self.vy = -self.vy
-
-    def hit(self, points=1):
-        """Попадание шарика в цель."""
-        self.points += points
 
     def draw(self):
         """Просто рисуем несколько кругов друг на друге - это наша мишень"""
@@ -198,6 +211,27 @@ class Target:
         pygame.draw.circle(screen, self.color3, (self.x, self.y), self.r * 1 / 5)
 
 
+class Poly_target(Target):
+    def __init__(self):
+        """ Инициализация нового многоугольника """
+        super(Poly_target, self).__init__()
+        self.amount_vertex = 1
+        self.live_time_poly = 3 # Время отображения одного многоугольника в секундах
+
+    def draw(self):
+        """
+        Рисует один правильный многоугольник.
+        position: координаты центра фигуры в скобках, например (200, 400)
+        """
+        n = self.amount_vertex
+        pygame.draw.polygon(screen, self.color1, [
+            (self.x + self.r * math.cos(2 * math.pi * i / n), self.y + self.r * math.sin(2 * math.pi * i / n))
+            for i in range(n)
+        ])
+
+
+    def poly_cut_livetime(self, d_t):
+            self.live_time_poly -= d_t
 
 class Game:
     """Отвечает за события с пушкой, мячиками и мишенями на экране"""
@@ -206,6 +240,7 @@ class Game:
         self.bullets = 0
         self.gun = Gun()
         self.targets = []
+        self.polys = []  # мишени-многоугольники
         self.ochki = 0
         self.FPS = 30
 
@@ -217,8 +252,14 @@ class Game:
     def remove_ball(self, ball):
         """Удаляет мячик"""
         ball.cut_livetime(1/self.FPS)
-        if ball.livetime <=0 :
+        if ball.livetime <= 0:
             self.balls.remove(ball)
+
+    def change_poly(self, poly):
+        """Заменяет мишень-многоугольник"""
+        poly.poly_cut_livetime(1/self.FPS)
+        if poly.live_time_poly <= 0:
+            self.polys.remove(poly)
 
 
 
@@ -244,12 +285,14 @@ class Game:
 
             if len(self.targets) < 2:
                 for i in range(2):
-                    self.targets.append(Target())
+                    self.targets.append(Ball_target())
 
             screen.fill(WHITE)
 
             self.draw_score(self.ochki)
             self.gun.draw()
+
+
 
             for b in self.balls:
                 b.draw()
