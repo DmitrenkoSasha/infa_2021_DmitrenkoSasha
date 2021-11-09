@@ -115,25 +115,42 @@ class Gun:  # Необходимо создать надкласс пушка, �
 
 class Enemy_Gun:
     "Вражеская пушка, которая зависит пушки игрока. Эта пушка нуждается в координатах главной пушки, чтобы знать, куда стрелять"
-    def __init__(self, x, y):
+    def __init__(self):
         self.f2_power = 10
         self.f2_on = 0
+        self.x = 100
+        self.y = 100
         self.angle = 1
         self.color1 = GREY
         self.color2 = GREY
-        self.lenght = 40
-        self.width = 5
-        self.x = x
-        self.y = y
+        self.lenght = 40  # длина ствола
+        self.width = 5  # толщина ствола
         self.vx = 3
         self.vy = 3
         self.motion_x = 'STOP'
         self.motion_y = 'STOP'
 
-    def draw(self):
+    def fire2_end(self, x_our, y_our):
+        """Выстрел мячом.
+
+        Происходит при отпускании кнопки мыши.
+        Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
+        """
+        new_ball = Ball(self.x, self.y)
+        new_ball.r += 5
+        self.angle = math.atan2((y_our - new_ball.y), (x_our - new_ball.x))
+        new_ball.vx = self.f2_power * math.cos(self.angle)
+        new_ball.vy = - self.f2_power * math.sin(self.angle)
+        self.f2_on = 0
+        self.f2_power = 10
+
+        return new_ball
+
+    def draw(self, x_our, y_our):
         """Рисует пушку. Ствол смотрит на точку, куда наведён курсор."""
-        pygame.draw.rect(screen, self.color2, (self.x - 60, self.y + 20, 120, 50))
-        pygame.draw.rect(screen, self.color2, (self.x - 30, self.y, 60, 20))
+        self.angle = math.atan2((y_our - self.y), (x_our - self.x))
+        pygame.draw.rect(screen, self.color2, (self.x - 30, self.y + 10, 60, 25))
+        pygame.draw.rect(screen, self.color2, (self.x - 15, self.y, 30, 10))
         pygame.draw.circle(screen, self.color2, [self.x,  self.y], 5)
         pygame.draw.polygon(screen, self.color1, [[self.x, self.y], [self.x + self.width * math.sin(self.angle),
                                                                      self.y - math.cos(self.angle) * self.width],
@@ -143,6 +160,7 @@ class Enemy_Gun:
                                                       self.angle) * self.width],
                                                   [self.x + math.cos(self.angle) * self.lenght,
                                                   self.y + math.sin(self.angle) * self.lenght]])
+
 
 class Ball:
     def __init__(self, x, y):
@@ -312,7 +330,7 @@ class Game:
         self.balls = []  # Список шариков-снарядов
         self.bullets = 0
         self.gun = Gun()
-        self.enemy = Enemy_Gun(self.gun.x, self.gun.y)
+        self.enemy = Enemy_Gun()
         self.targets = []
         self.ochki = 0
         self.FPS = 30
@@ -355,7 +373,7 @@ class Game:
 
         self.draw_score(self.ochki)
         self.gun.draw()
-        self.enemy.draw()
+        self.enemy.draw(self.gun.x, self.gun.y)
 
         for b in self.balls:
             b.draw()
@@ -395,11 +413,10 @@ class Game:
                 if event.type == pygame.QUIT:
                     finished = True
                     self.sort_results(name, self.ochki)
-                    print(name)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.gun.fire2_start()
                 elif event.type == pygame.MOUSEBUTTONUP:
-                    new_ball = self.gun.fire2_end(event)  # Новый шарик вылетает из пушки после отпускания кнопки мыши
+                    new_ball = self.gun.fire2_end(event) # Новый шарик вылетает из пушки после отпускания кнопки мыши
                     self.bullets += 1  # FIXME Зачем эти пули?
                     self.balls.append(new_ball)  # Новый шарик записан в список
                 elif event.type == pygame.MOUSEMOTION:
