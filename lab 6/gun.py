@@ -19,8 +19,6 @@ GAME_COLORS = [RED, BLUE, YELLOW, LIMEGREEN, GREEN, MAGENTA, CYAN]
 
 WIDTH = 800
 HEIGHT = 600
-
-
 class Gun:  # Необходимо создать надкласс пушка, и два подкласса пушка1,2 Они будут смотреть друг на друга и стрелять.
     # Вторая будет стрелять автоматически (рандомно)
     def __init__(self, x=60, y=450):
@@ -115,8 +113,38 @@ class Gun:  # Необходимо создать надкласс пушка, �
         elif self.motion_y == 'UP':  # Именно вверх, так как 0 по OY сверху
             self.y -= self.vy
 
+class Enemy_Gun:
+    "Вражеская пушка, которая зависит пушки игрока. Эта пушка нуждается в координатах главной пушки, чтобы знать, куда стрелять"
+    def __init__(self, x, y):
+        self.f2_power = 10
+        self.f2_on = 0
+        self.angle = 1
+        self.color1 = GREY
+        self.color2 = GREY
+        self.lenght = 40
+        self.width = 5
+        self.x = x
+        self.y = y
+        self.vx = 3
+        self.vy = 3
+        self.motion_x = 'STOP'
+        self.motion_y = 'STOP'
 
-class Ball(Gun):
+    def draw(self):
+        """Рисует пушку. Ствол смотрит на точку, куда наведён курсор."""
+        pygame.draw.rect(screen, self.color2, (self.x - 60, self.y + 20, 120, 50))
+        pygame.draw.rect(screen, self.color2, (self.x - 30, self.y, 60, 20))
+        pygame.draw.circle(screen, self.color2, [self.x,  self.y], 5)
+        pygame.draw.polygon(screen, self.color1, [[self.x, self.y], [self.x + self.width * math.sin(self.angle),
+                                                                     self.y - math.cos(self.angle) * self.width],
+                                                  [self.x + math.cos(self.angle) * self.lenght + self.width * math.sin(
+                                                     self.angle),
+                                                  self.y + math.sin(self.angle) * self.lenght - math.cos(
+                                                      self.angle) * self.width],
+                                                  [self.x + math.cos(self.angle) * self.lenght,
+                                                  self.y + math.sin(self.angle) * self.lenght]])
+
+class Ball:
     def __init__(self, x, y):
         """ Конструктор класса ball
 
@@ -208,7 +236,7 @@ class Target:
 
 class Ball_target(Target):
     def __init__(self):
-        """ Инициализация нового многоугольника """
+        """ Инициализация нового шарика-мишени """
         super(Ball_target, self).__init__()
 
     def hit(self, points=2):
@@ -284,6 +312,7 @@ class Game:
         self.balls = []  # Список шариков-снарядов
         self.bullets = 0
         self.gun = Gun()
+        self.enemy = Enemy_Gun(self.gun.x, self.gun.y)
         self.targets = []
         self.ochki = 0
         self.FPS = 30
@@ -326,6 +355,7 @@ class Game:
 
         self.draw_score(self.ochki)
         self.gun.draw()
+        self.enemy.draw()
 
         for b in self.balls:
             b.draw()
