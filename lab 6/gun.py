@@ -396,18 +396,15 @@ class Game:
                 if b.vx == 0 and b.vy == 0:
                     self.remove_ball(b)
                 for target in self.targets:
-                    if b.hit_test(target) and target.live == 1:
+                    if b.hit_test(target) and target.live == 1 and b in self.balls:
                         target.live = 0
                         target.hit()
                         self.ochki += target.points
+                        self.balls.remove(b)
                         self.change_target(target)
-                        if b in self.balls:
-                            self.balls.remove(b)
-                        else:
-                            print('Этот мячик не в списке')
 
             for target in self.targets:
-                target.move()
+                #target.move()
                 if type(target) is Poly_target:
                     self.change_poly(target)
 
