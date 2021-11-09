@@ -131,12 +131,12 @@ class Enemy_Gun:
 
     def fire2_end(self, x_our, y_our):
         """Выстрел мячом.
-
         Происходит при истечении промежутка времени fire_time.
         Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
+
         :x_our, y_our: координаты нашей пушки (точка, где начинается дуло)
         """
-        new_ball = Ball(self.x, self.y)
+        new_ball = Enemy_Ball(self.x, self.y)
         new_ball.r += 5
         self.angle = math.atan2((y_our - new_ball.y), (x_our - new_ball.x))
         new_ball.vx = self.f2_power * math.cos(self.angle)
@@ -160,8 +160,7 @@ class Enemy_Gun:
                                                   [self.x + math.cos(self.angle) * self.lenght,
                                                   self.y + math.sin(self.angle) * self.lenght]])
 
-
-class Ball:
+class All_Ball:
     def __init__(self, x, y):
         """ Конструктор класса ball
 
@@ -209,7 +208,7 @@ class Ball:
             self.y = 600 - self.r
 
     def cut_livetime(self, d_t):
-        """Уменьшает оставшееся время отображения на экране"""
+        """Уменьшает оставшееся время отображения на экране шарика, который лежит на земле"""
         self.livetime -= d_t
 
     def draw(self):
@@ -218,6 +217,29 @@ class Ball:
             self.color,
             (self.x, self.y),
             self.r)
+
+    def hit_test(self, obj):
+        pass
+
+
+class Enemy_Ball(All_Ball):
+    def __init__(self, x, y):
+        """ Инициализация нового шарика-мишени """
+        super().__init__(x, y)
+        self.r = 5
+        self.color = BLACK
+
+
+class Ball(All_Ball):
+    def __init__(self, x, y):
+        """ Конструктор класса ball
+
+        Args:
+        x - начальное положение мяча по горизонтали
+        y - начальное положение мяча по вертикали
+        """
+        super().__init__(x, y)
+
 
     def hit_test(self, obj):
         """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
