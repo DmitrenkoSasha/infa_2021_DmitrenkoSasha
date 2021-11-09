@@ -2,6 +2,7 @@ import pygame
 import math
 # import sys, os
 from random import choice, randint
+from operator import itemgetter
 
 
 RED = 0xFF0000
@@ -20,7 +21,8 @@ WIDTH = 800
 HEIGHT = 600
 
 
-class Gun:
+class Gun:  # Необходимо создать надкласс пушка, и два подкласса пушка1,2 Они будут смотреть друг на друга и стрелять.
+    # Вторая будет стрелять автоматически (рандомно)
     def __init__(self, x=60, y=450):
         self.f2_power = 10
         self.f2_on = 0
@@ -304,7 +306,7 @@ class Game:
             self.targets.append(Poly_target())
 
     def remove_ball(self, ball):
-        """Удаляет мячик"""
+        """Уменьшает жизнь упавшего мячика, а потом удаляет его"""
         ball.cut_livetime(1/self.FPS)
         if ball.livetime <= 0:
             self.balls.remove(ball)
@@ -362,6 +364,8 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finished = True
+                    self.sort_results(name, self.ochki)
+                    print(name)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.gun.fire2_start()
                 elif event.type == pygame.MOUSEBUTTONUP:
@@ -379,13 +383,11 @@ class Game:
                         self.gun.motion_x = 'LEFT'
                     elif event.key == pygame.K_RIGHT:
                         self.gun.motion_x = 'RIGHT'
-                    #self.gun.move(event)  # Пушка движется
                 elif event.type == pygame.KEYUP:
                     if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
                         self.gun.motion_x = 'STOP'
                     elif event.key in [pygame.K_UP, pygame.K_DOWN]:
                         self.gun.motion_y = 'STOP'
-                        #self.gun.move(event)
 
             self.gun.move_gun()
 
@@ -399,6 +401,10 @@ class Game:
                         target.hit()
                         self.ochki += target.points
                         self.change_target(target)
+                        if b in self.balls:
+                            self.balls.remove(b)
+                        else:
+                            print('Этот мячик не в списке')
 
             for target in self.targets:
                 target.move()
@@ -411,15 +417,44 @@ class Game:
 
         pygame.quit()
 
+    def sort_results(self, text, score):
+        """вносит результаты игрока в таблицу результатов 'scores.txt' и отсортировывает её,
+        а затем записывает полученное в таблицу 'table.txt'
+        :param text: имя игрока
+        :param score: счёт игрока
+        :return:  'scores.txt' & 'table.txt'
+        """
+        table = open('table_gun.txt', 'w')  # Будет с сортированными данными
+        with open('scores_gun.txt', 'a') as output:  # Здесь данные в хронометрическом порядке
+            print(text, '"', score, file=output)
+        with open('scores_gun.txt', 'r') as f:
+            for string in range(0, 1000, 1):
+                stroka = f.readline()
+                if stroka != '':
+                    pairs = stroka.split('" ')
+                    scores.append(pairs)
+                    a = scores[string][1]
+                    a.rstrip('\n')
+                    a = int(a)
+                    scores[string][1] = a
+        new_list = sorted(scores, key=itemgetter(1))
+        new_list.reverse()
+        print('Best players', file=table)
+        for i in range(0, len(new_list), 1):
+            new_list[i][1] = str(new_list[i][1])
+            print(i+1, ')', ''.join(new_list[i]), file=table)
+        table.close()
 
 def main():
 
-    global screen, myfont, clock
+    global screen, myfont, clock, name, scores
     pygame.init()
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.font.init()
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
+    name = input('Введите своё имя: ')
+    scores = []
 
     game = Game()
     game.mainloop()
