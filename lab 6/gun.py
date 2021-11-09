@@ -19,6 +19,7 @@ GAME_COLORS = [RED, BLUE, YELLOW, LIMEGREEN, GREEN, MAGENTA, CYAN]
 
 WIDTH = 800
 HEIGHT = 600
+
 class Gun:  # Необходимо создать надкласс пушка, и два подкласса пушка1,2 Они будут смотреть друг на друга и стрелять.
     # Вторая будет стрелять автоматически (рандомно)
     def __init__(self, x=60, y=450):
@@ -116,25 +117,24 @@ class Gun:  # Необходимо создать надкласс пушка, �
 class Enemy_Gun:
     "Вражеская пушка, которая зависит пушки игрока. Эта пушка нуждается в координатах главной пушки, чтобы знать, куда стрелять"
     def __init__(self):
-        self.f2_power = 10
+        self.f2_power = 30
         self.f2_on = 0
-        self.x = 100
-        self.y = 100
+        self.x = randint(WIDTH//2, WIDTH)
+        self.y = randint(0, HEIGHT)
         self.angle = 1
-        self.color1 = GREY
+        self.color1 = BLACK
         self.color2 = GREY
         self.lenght = 40  # длина ствола
         self.width = 5  # толщина ствола
-        self.vx = 3
-        self.vy = 3
-        self.motion_x = 'STOP'
-        self.motion_y = 'STOP'
+        self.fire_time = 5  # промежуток времени, через который пушка стреляет
+
 
     def fire2_end(self, x_our, y_our):
         """Выстрел мячом.
 
-        Происходит при отпускании кнопки мыши.
+        Происходит при истечении промежутка времени fire_time.
         Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
+        :x_our, y_our: координаты нашей пушки (точка, где начинается дуло)
         """
         new_ball = Ball(self.x, self.y)
         new_ball.r += 5
@@ -142,12 +142,11 @@ class Enemy_Gun:
         new_ball.vx = self.f2_power * math.cos(self.angle)
         new_ball.vy = - self.f2_power * math.sin(self.angle)
         self.f2_on = 0
-        self.f2_power = 10
 
         return new_ball
 
     def draw(self, x_our, y_our):
-        """Рисует пушку. Ствол смотрит на точку, куда наведён курсор."""
+        """Рисует пушку. Ствол смотрит на пушку игрока - нашу пушку"""
         self.angle = math.atan2((y_our - self.y), (x_our - self.x))
         pygame.draw.rect(screen, self.color2, (self.x - 30, self.y + 10, 60, 25))
         pygame.draw.rect(screen, self.color2, (self.x - 15, self.y, 30, 10))
@@ -408,6 +407,11 @@ class Game:
         while not finished:
             self.repit_actions()
 
+            self.enemy.fire_time -= 1/self.FPS
+            if self.enemy.fire_time <= 0:
+                self.enemy.fire_time = 5
+                new_ball = self.enemy.fire2_end(self.gun.x, self.gun.y)
+                self.balls.append(new_ball)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
