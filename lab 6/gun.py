@@ -5,7 +5,7 @@ from random import choice, randint
 from operator import itemgetter
 
 
-RED = 0xFF0000
+RED = (255, 0, 0)
 BLUE = 0x0000FF
 YELLOW = 0xFFC91F
 LIMEGREEN = (50, 205, 50)
@@ -14,6 +14,7 @@ MAGENTA = 0xFF03B8
 CYAN = 0x00FFCC
 BLACK = (0, 0, 0)
 WHITE = 0xFFFFFF
+ORANGE = (255, 98, 31)
 GREY = 0x7D7D7D
 GAME_COLORS = [RED, BLUE, YELLOW, LIMEGREEN, GREEN, MAGENTA, CYAN]
 
@@ -35,6 +36,7 @@ class Gun:
         self.vy = 3
         self.motion_x = 'STOP'
         self.motion_y = 'STOP'
+
         self.semi_widht_korpus = 60
         self.height_korpus = 50
         self.semi_widht_bashnya = 30
@@ -137,7 +139,7 @@ class Enemy_Gun:
         self.height_korpus = 25
         self.semi_widht_bashnya = 15
         self.height_bashnya = 10
-        self.points = 0
+        self.points = 3
 
 
     def fire2_end(self, x_our, y_our):
@@ -157,10 +159,10 @@ class Enemy_Gun:
         return new_ball
 
     def draw(self, x_our, y_our):
-        """Рисует пушку. Ствол смотрит на пушку игрока - нашу пушку"""
+        """Рисует пушку. Ствол врага смотрит на нашу пушку"""
         self.angle = math.atan2((y_our - self.y), (x_our - self.x))
-        pygame.draw.rect(screen, self.color2, (self.x - 30, self.y + 10, 60, 25))
-        pygame.draw.rect(screen, self.color2, (self.x - 15, self.y, 30, 10))
+        pygame.draw.rect(screen, self.color2, (self.x - self.semi_widht_korpus, self.y + self.height_bashnya, self.semi_widht_korpus * 2, self.height_korpus))
+        pygame.draw.rect(screen, self.color2, (self.x - self.semi_widht_bashnya, self.y, self.semi_widht_bashnya * 2, self.height_bashnya))
         pygame.draw.circle(screen, self.color2, [self.x,  self.y], 5)
         pygame.draw.polygon(screen, self.color1, [[self.x, self.y], [self.x + self.width * math.sin(self.angle),
                                                                      self.y - math.cos(self.angle) * self.width],
@@ -171,8 +173,6 @@ class Enemy_Gun:
                                                   [self.x + math.cos(self.angle) * self.lenght,
                                                   self.y + math.sin(self.angle) * self.lenght]])
 
-    def hit(self, points=3):
-        self.points += points
 
 
 class All_Ball:
@@ -232,25 +232,26 @@ class All_Ball:
             self.color,
             (self.x, self.y),
             self.r)
+
     def hit_test_Gun(self, obj):
-        """Проверка попадания по нашему танку"""
-        if type(obj) is Gun or Enemy_Gun:
-            if (self.x - self.r) < (obj.x + obj.semi_widht_korpus) and (self.y - self.r) > (obj.y - obj.height_bashnya) and (self.y + self.r) < (obj.y + obj.height_korpus):
-                return(True)
+        pass
 
     def hit_test(self, obj):
         pass
 
 class Enemy_Ball(All_Ball):
     def __init__(self, x, y):
-        """ Инициализация нового шарика-мишени """
+        """ Инициализация  шарика-снаряда вражеской пушки """
         super().__init__(x, y)
         self.r = 5
         self.color = BLACK
 
-        '''pygame.draw.rect(screen, self.color2, (self.x - 60, self.y + 20, 120, 50))
-        pygame.draw.rect(screen, self.color2, (self.x - 30, self.y, 60, 20))'''
-
+    def hit_test_Gun(self, obj):
+        """Проверка попадания по нашему танку"""
+        if ((self.x - self.r) < (obj.x + obj.semi_widht_korpus) and (self.x - self.r) < (
+            obj.x + obj.semi_widht_korpus) and
+                (self.y - self.r) > (obj.y) and (self.y + self.r) < (obj.y + obj.height_korpus + obj.height_bashnya)):
+            return(True)
 
 
 
@@ -273,11 +274,15 @@ class Ball(All_Ball):
         Returns:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
-        '''if type(obj) is Enemy_Gun or Gun:
-            if (self.x - self.r) < (obj.x + obj.semi_widht_korpus) and (self.y - self.r) > (obj.y - obj.height_bashnya) and (self.y + self.r) < (obj.y + obj.height_korpus):
-                return(True)'''
-        if type(obj) is Ball_target or Poly_target:
-            return (self.x - obj.x)**2 + (self.y - obj.y)**2 <= (obj.r+self.r)**2
+        return (self.x - obj.x)**2 + (self.y - obj.y)**2 <= (obj.r+self.r)**2
+
+    def hit_test_Gun(self, obj):
+        """Проверка попадания по вражескому танку"""
+        if ((self.x + self.r) > (obj.x - obj.semi_widht_korpus) and (self.x - self.r) < (
+                obj.x + obj.semi_widht_korpus) and
+                (self.y + self.r) > (obj.y) and (self.y - self.r) < (obj.y + obj.height_korpus + obj.height_bashnya)):
+            return (True)
+
 
 
 
@@ -365,14 +370,25 @@ class Mina:
     def __init__(self):
         self.x = randint(0, WIDTH)
         self.y = randint(0, HEIGHT)
-        self.size = randint(10, 15)
+        self.a = randint(20, 30)
+        self.b = randint(10, 15)
         self.amount = 2
+        self.color = ORANGE
+        self.color_button = BLACK
+        self.points = 1*(self.a + self.b)/2
 
     def draw(self):
-        pass
+        pygame.draw.ellipse(screen, self.color,
+                            (self.x, self.y, self.a, self.b))
+        pygame.draw.ellipse(screen, self.color_button ,
+                            [self.x + self.a/4, self.y, self.a/2, self.b/2])
 
-    def check(self):
-        pass
+    def check(self, obj):
+        """Проверка попадания танка на мину"""
+        if ((self.x + self.a) > (obj.x - obj.semi_widht_korpus) and (self.x + self.a) < (obj.x + obj.semi_widht_korpus) and
+                self.y > obj.y and (self.y + self.b) < (obj.y + obj.height_korpus + obj.height_bashnya)):
+            return True
+
 
 
 class Game:
@@ -383,17 +399,26 @@ class Game:
         self.gun = Gun()
         self.enemy = Enemy_Gun()
         self.targets = []
+        self.mines = []
         self.ochki = 0
-        self.FPS = 30
         self.amount_poly = 2
         self.amount_balls = 2
+        self.amount_mines = 2
 
-    def first_targets(self):
+        self.FPS = 50
+
+        self.boom_mine = None
+        self.live_boom = 3
+        self.happen_boom = False
+
+    def first_targets_mines(self):
         """ прорисовка первых целей"""
         for i in range(self.amount_poly):
             self.targets.append(Poly_target())
         for i in range(self.amount_balls):
             self.targets.append(Ball_target())
+        for i in range(self.amount_mines):
+            self.mines.append(Mina())
 
     def change_target(self, t):
         """Удаляет старую мишень, создаёт новую"""
@@ -422,14 +447,25 @@ class Game:
         Экономия места"""
         screen.fill(WHITE)
 
-        self.draw_score(self.ochki)
-        self.gun.draw()
-        self.enemy.draw(self.gun.x, self.gun.y)
-
         for b in self.balls:
             b.draw()
         for target in self.targets:
             target.draw()
+        for mine in self.mines:
+            mine.draw()
+
+        self.gun.draw()
+        self.enemy.draw(self.gun.x, self.gun.y)
+
+        self.draw_score(self.ochki)
+        if self.happen_boom:
+            self.draw_boom(-self.boom_mine.points)
+            self.live_boom -= 1/self.FPS
+
+        if self.live_boom < 0:
+            self.happen_boom = False
+            self.live_boom = 3
+
         pygame.display.update()
 
         clock.tick(self.FPS)
@@ -447,17 +483,30 @@ class Game:
                                     BLACK)  # Поверхность с отображением кол-ва очков
         screen.blit(textsurface, (20, 20))
 
+    def draw_boom(self, score):
+        """
+        Пишет в левом верхнем углу экрана счёт игрока
+        :param score: Score
+        :type score: float
+        :return: None
+        :rtype: None
+        """
+        textsurface = myfont.render('! ВЫ ПОДОРВАЛИСЬ НА МИНЕ !    ' + str(score), False, RED)
+        screen.blit(textsurface, (100, HEIGHT/2))
+        print(1)
+
 
 
     def mainloop(self):
         finished = False
 
-        self.first_targets()
+        self.first_targets_mines()
         self.repit_actions()
 
 
         while not finished:
             self.repit_actions()
+
 
             self.enemy.fire_time -= 1/self.FPS
             if self.enemy.fire_time <= 0:
@@ -494,20 +543,29 @@ class Game:
 
             self.gun.move_gun()
 
+            for mine in self.mines:
+                if mine.check(self.gun):
+                    self.boom_mine = mine
+                    self.ochki -= mine.points
+                    self.mines.remove(mine)
+                    self.mines.append(Mina())
+                    self.happen_boom = True
+
+
             for b in self.balls:
                 b.move(1/self.FPS)
                 if b.vx == 0 and b.vy == 0:
                     self.remove_ball(b)
                 if type(b) is Enemy_Ball:
                     if b.hit_test_Gun(self.gun):
-                        '''self.enemy.hit()
-                        self.ochki -= self.enemy.points'''
-                        self.ochki -= 3
+                        self.ochki -= self.enemy.points
+                        self.balls.remove(b)
                 if type(b) is Ball:
                     if b.hit_test_Gun(self.enemy):
                         '''self.enemy.hit()
                         self.ochki += self.enemy.points'''
-                        self.ochki += 3
+                        self.ochki += self.enemy.points
+                        self.balls.remove(b)
                 for target in self.targets:
                     if b.hit_test(target) and target.live == 1 and b in self.balls:
                         target.live = 0
@@ -517,12 +575,11 @@ class Game:
                         self.change_target(target)
 
             for target in self.targets:
-                #target.move()
+                '''target.move()
                 if type(target) is Poly_target:
-                    self.change_poly(target)
+                    self.change_poly(target)'''
 
             self.gun.power_up()  # Нужно, чтобы пушка окрасилась в серый
-
 
 
         pygame.quit()
