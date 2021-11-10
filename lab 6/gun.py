@@ -134,7 +134,7 @@ class Enemy_Gun:
         self.color2 = GREY
         self.lenght = 40  # длина ствола
         self.width = 5  # толщина ствола
-        self.fire_time = 5  # промежуток времени, через который пушка стреляет
+        self.fire_time = 5  # промежуток времени в сек, через который пушка стреляет
         self.semi_widht_korpus = 30
         self.height_korpus = 25
         self.semi_widht_bashnya = 15
@@ -493,7 +493,7 @@ class Game:
         """
         textsurface = myfont.render('! ВЫ ПОДОРВАЛИСЬ НА МИНЕ !    ' + str(score), False, RED)
         screen.blit(textsurface, (100, HEIGHT/2))
-        print(1)
+
 
 
 
@@ -517,12 +517,11 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finished = True
-                    #self.sort_results(name, self.ochki)
+                    self.sort_results(name, self.ochki)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.gun.fire2_start()
                 elif event.type == pygame.MOUSEBUTTONUP:
                     new_ball = self.gun.fire2_end(event) # Новый шарик вылетает из пушки после отпускания кнопки мыши
-                    self.bullets += 1  # FIXME Зачем эти пули?
                     self.balls.append(new_ball)  # Новый шарик записан в список
                 elif event.type == pygame.MOUSEMOTION:
                     self.gun.targetting(event)  # Пушка поворачивается за мышью
@@ -562,10 +561,9 @@ class Game:
                         self.balls.remove(b)
                 if type(b) is Ball:
                     if b.hit_test_Gun(self.enemy):
-                        '''self.enemy.hit()
-                        self.ochki += self.enemy.points'''
                         self.ochki += self.enemy.points
                         self.balls.remove(b)
+                        self.enemy = Enemy_Gun()
                 for target in self.targets:
                     if b.hit_test(target) and target.live == 1 and b in self.balls:
                         target.live = 0
@@ -575,9 +573,9 @@ class Game:
                         self.change_target(target)
 
             for target in self.targets:
-                '''target.move()
+                target.move()
                 if type(target) is Poly_target:
-                    self.change_poly(target)'''
+                    self.change_poly(target)
 
             self.gun.power_up()  # Нужно, чтобы пушка окрасилась в серый
 
@@ -620,7 +618,7 @@ def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.font.init()
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
-    #name = input('Введите своё имя: ')
+    name = input('Введите своё имя: ')
     scores = []
 
     game = Game()
