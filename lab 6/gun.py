@@ -20,8 +20,7 @@ GAME_COLORS = [RED, BLUE, YELLOW, LIMEGREEN, GREEN, MAGENTA, CYAN]
 WIDTH = 800
 HEIGHT = 600
 
-class Gun:  # Необходимо создать надкласс пушка, и два подкласса пушка1,2 Они будут смотреть друг на друга и стрелять.
-    # Вторая будет стрелять автоматически (рандомно)
+class Gun:
     def __init__(self, x=60, y=450):
         self.f2_power = 10
         self.f2_on = 0
@@ -36,6 +35,11 @@ class Gun:  # Необходимо создать надкласс пушка, �
         self.vy = 3
         self.motion_x = 'STOP'
         self.motion_y = 'STOP'
+        self.semi_widht_korpus = 60
+        self.height_korpus = 50
+        self.semi_widht_bashnya = 30
+        self.height_bashnya = 20
+
 
     def fire2_start(self):
         self.f2_on = 1
@@ -71,8 +75,10 @@ class Gun:  # Необходимо создать надкласс пушка, �
 
     def draw(self):
         """Рисует пушку. Ствол смотрит на точку, куда наведён курсор."""
-        pygame.draw.rect(screen, self.color2, (self.x - 60, self.y + 20, 120, 50))
-        pygame.draw.rect(screen, self.color2, (self.x - 30, self.y, 60, 20))
+        pygame.draw.rect(screen, self.color2,
+                         (self.x - self.semi_widht_korpus, self.y + self.height_bashnya, self.semi_widht_korpus * 2, self.height_korpus))
+        pygame.draw.rect(screen, self.color2,
+                         (self.x - self.semi_widht_bashnya, self.y, self.semi_widht_bashnya * 2, self.height_bashnya))
         pygame.draw.circle(screen, self.color2, [self.x,  self.y], 5)
         pygame.draw.polygon(screen, self.color1, [[self.x, self.y], [self.x + self.width * math.sin(self.angle),
                                                                      self.y - math.cos(self.angle) * self.width],
@@ -127,6 +133,11 @@ class Enemy_Gun:
         self.lenght = 40  # длина ствола
         self.width = 5  # толщина ствола
         self.fire_time = 5  # промежуток времени, через который пушка стреляет
+        self.semi_widht_korpus = 30
+        self.height_korpus = 25
+        self.semi_widht_bashnya = 15
+        self.height_bashnya = 10
+        self.points = 0
 
 
     def fire2_end(self, x_our, y_our):
@@ -159,6 +170,10 @@ class Enemy_Gun:
                                                       self.angle) * self.width],
                                                   [self.x + math.cos(self.angle) * self.lenght,
                                                   self.y + math.sin(self.angle) * self.lenght]])
+
+    def hit(self, points=3):
+        self.points += points
+
 
 class All_Ball:
     def __init__(self, x, y):
@@ -217,10 +232,14 @@ class All_Ball:
             self.color,
             (self.x, self.y),
             self.r)
+    def hit_test_Gun(self, obj):
+        """Проверка попадания по нашему танку"""
+        if type(obj) is Gun or Enemy_Gun:
+            if (self.x - self.r) < (obj.x + obj.semi_widht_korpus) and (self.y - self.r) > (obj.y - obj.height_bashnya) and (self.y + self.r) < (obj.y + obj.height_korpus):
+                return(True)
 
     def hit_test(self, obj):
         pass
-
 
 class Enemy_Ball(All_Ball):
     def __init__(self, x, y):
@@ -228,6 +247,11 @@ class Enemy_Ball(All_Ball):
         super().__init__(x, y)
         self.r = 5
         self.color = BLACK
+
+        '''pygame.draw.rect(screen, self.color2, (self.x - 60, self.y + 20, 120, 50))
+        pygame.draw.rect(screen, self.color2, (self.x - 30, self.y, 60, 20))'''
+
+
 
 
 class Ball(All_Ball):
@@ -249,7 +273,13 @@ class Ball(All_Ball):
         Returns:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
-        return (self.x - obj.x)**2 + (self.y - obj.y)**2 <= (obj.r+self.r)**2
+        '''if type(obj) is Enemy_Gun or Gun:
+            if (self.x - self.r) < (obj.x + obj.semi_widht_korpus) and (self.y - self.r) > (obj.y - obj.height_bashnya) and (self.y + self.r) < (obj.y + obj.height_korpus):
+                return(True)'''
+        if type(obj) is Ball_target or Poly_target:
+            return (self.x - obj.x)**2 + (self.y - obj.y)**2 <= (obj.r+self.r)**2
+
+
 
 
 class Target:
@@ -438,7 +468,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finished = True
-                    self.sort_results(name, self.ochki)
+                    #self.sort_results(name, self.ochki)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.gun.fire2_start()
                 elif event.type == pygame.MOUSEBUTTONUP:
@@ -468,6 +498,16 @@ class Game:
                 b.move(1/self.FPS)
                 if b.vx == 0 and b.vy == 0:
                     self.remove_ball(b)
+                if type(b) is Enemy_Ball:
+                    if b.hit_test_Gun(self.gun):
+                        '''self.enemy.hit()
+                        self.ochki -= self.enemy.points'''
+                        self.ochki -= 3
+                if type(b) is Ball:
+                    if b.hit_test_Gun(self.enemy):
+                        '''self.enemy.hit()
+                        self.ochki += self.enemy.points'''
+                        self.ochki += 3
                 for target in self.targets:
                     if b.hit_test(target) and target.live == 1 and b in self.balls:
                         target.live = 0
@@ -523,7 +563,7 @@ def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.font.init()
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
-    name = input('Введите своё имя: ')
+    #name = input('Введите своё имя: ')
     scores = []
 
     game = Game()
